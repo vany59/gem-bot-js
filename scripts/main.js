@@ -5,6 +5,8 @@ var sfs;
 //------------------------------------
 initConnection();
 
+var room;
+
 function initConnection()
 {
 	document.getElementById("log").innerHTML = "";
@@ -13,8 +15,8 @@ function initConnection()
 
 	// Create configuration object
 	var config = {};
-	//config.host = "172.16.100.112";
-	//config.port = 8080;
+	config.host = "172.16.100.112";
+	config.port = 8080;
 	config.host = "172.16.15.54";
 	config.port = 8888;
 	//config.debug = true;
@@ -33,12 +35,15 @@ function initConnection()
 	sfs.logger.addEventListener(SFS2X.LoggerEvent.WARNING, onWarningLogged, this);
 	sfs.logger.addEventListener(SFS2X.LoggerEvent.ERROR, onErrorLogged, this);
 
+	sfs.addEventListener(SFS2X.SFSEvent.CONNECTION, onConnection, this);
+	sfs.addEventListener(SFS2X.SFSEvent.CONNECTION_LOST, onConnectionLost, this);
+
 	sfs.addEventListener(SFS2X.SFSEvent.LOGIN_ERROR, onLoginError, this);
 	sfs.addEventListener(SFS2X.SFSEvent.LOGIN, onLogin, this);
 
-	// Add event listeners
-	sfs.addEventListener(SFS2X.SFSEvent.CONNECTION, onConnection, this);
-	sfs.addEventListener(SFS2X.SFSEvent.CONNECTION_LOST, onConnectionLost, this);
+	sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN, OnRoomJoin, this);
+	sfs.addEventListener(SFS2X.SFSEvent.ROOM_JOIN_ERROR, OnRoomJoinError, this);
+	sfs.addEventListener(SFS2X.SFSEvent.EXTENSION_RESPONSE, OnExtensionResponse, this);	
 
 	// Attempt connection
 	sfs.connect();
@@ -164,4 +169,57 @@ function onLogin(event)
 	trace("Login successful!" +
 		  "\n\tZone: " + event.zone +
 		  "\n\tUser: " + event.user);
+
+	document.getElementById("loginBtn").style.visibility = "hidden";
+	document.getElementById("findBtn").style.visibility = "visible";
+}
+
+function findGame(){
+	var data = new SFS2X.SFSObject();
+	data.putUtfString("type", "");
+	data.putUtfString("adventureId", "");
+	sfs.send(new SFS2X.ExtensionRequest("LOBBY_FIND_GAME", data));
+}
+
+function OnRoomJoin(event)
+{
+	trace("OnRoomJoin " + event.room.name);
+
+	room = event.room;
+}
+
+function OnRoomJoinError(event)
+{
+	trace("OnRoomJoinError");
+	console.error(event);
+}
+
+function OnExtensionResponse(event)
+{
+	let evtParam = event.params;
+	var cmd = event.cmd;
+	trace("OnExtensionResponse " + cmd);
+
+	switch (cmd){
+		case "START_GAME":
+			//let gameSession = evtParam.GetSFSObject("gameSession");
+			
+			//StartGame(gameSession, room);
+			break;
+		case "END_GAME":
+			//endGame();
+			break;
+		case "START_TURN":
+			//StartTurn(evtParam);
+			break;
+		case "ON_SWAP_GEM":
+			//SwapGem(evtParam);
+			break;
+		case "ON_PLAYER_USE_SKILL":
+			//HandleGems(evtParam);
+			break;
+		case "PLAYER_JOINED_GAME":
+			sfs.send(new SFS2X.ExtensionRequest("Battle.I_AM_READY", new SFS2X.SFSObject(), room));
+			break;
+	}
 }
