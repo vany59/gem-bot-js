@@ -1,11 +1,13 @@
+//import {Player} from "./Player.js";
+
 var sfs;
-
-//------------------------------------
-// USER INTERFACE HANDLERS
-//------------------------------------
-initConnection();
-
 var room;
+
+const ENEMY_PLAYER_ID = 0;
+const BOT_PLAYER_ID = 2;
+
+// Connect to Game server
+initConnection();
 
 function initConnection()
 {
@@ -202,9 +204,8 @@ function OnExtensionResponse(event)
 
 	switch (cmd){
 		case "START_GAME":
-			//let gameSession = evtParam.GetSFSObject("gameSession");
-			
-			//StartGame(gameSession, room);
+			let gameSession = evtParam.getSFSObject("gameSession");
+			StartGame(gameSession, room);
 			break;
 		case "END_GAME":
 			//endGame();
@@ -221,5 +222,51 @@ function OnExtensionResponse(event)
 		case "PLAYER_JOINED_GAME":
 			sfs.send(new SFS2X.ExtensionRequest("Battle.I_AM_READY", new SFS2X.SFSObject(), room));
 			break;
+	}
+}
+
+function StartGame(gameSession, room)
+{
+	// Assign Bot player & enemy player
+	AssignPlayers(room);
+
+	// Player & Heroes
+	let objBotPlayer = gameSession.getSFSObject(botPlayer.displayName);
+	let objEnemyPlayer = gameSession.getSFSObject(enemyPlayer.displayName);
+
+	let botPlayerHero = objBotPlayer.getSFSArray("heroes");
+	let enemyPlayerHero = objEnemyPlayer.getSFSArray("heroes");
+
+	// for (let i = 0; i < botPlayerHero.Size(); i++)
+	// {
+	// 	var hero = new Hero(botPlayerHero.GetSFSObject(i));
+	// 	botPlayer.heroes.Add(hero);
+	// }
+
+	// for (let i = 0; i < enemyPlayerHero.Size(); i++)
+	// {
+	// 	enemyPlayer.heroes.Add(new Hero(enemyPlayerHero.GetSFSObject(i)));
+	// }
+
+	// // Gems
+	// grid = new Grid(gameSession.GetSFSArray("gems"), botPlayer.getRecommendGemType());
+	// currentPlayerId = gameSession.GetInt("currentPlayerId");
+	// trace("StartGame ");
+
+	// // SendFinishTurn(true);
+	// //taskScheduler.schedule(new FinishTurn(true), new Date(System.currentTimeMillis() + delaySwapGem));
+	// TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
+}
+
+function AssignPlayers(room) {
+	let user1 = room.getPlayerList()[0];
+	trace("id user1: " + user1.name);
+
+	if (user1.IsItMe) {
+		botPlayer = new Player(user1.PlayerId, "player1");
+		enemyPlayer = new Player(ENEMY_PLAYER_ID, "player2");
+	} else {
+		botPlayer = new Player(BOT_PLAYER_ID, "player2");
+		enemyPlayer = new Player(ENEMY_PLAYER_ID, "player1");
 	}
 }
