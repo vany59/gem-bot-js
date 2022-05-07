@@ -1,10 +1,20 @@
-//import {Player} from "./Player.js";
+// REQUEST command
+const SWAP_GEM = "Battle.SWAP_GEM";
+const USE_SKILL = "Battle.USE_SKILL";
+const SURRENDER = "Battle.SURRENDER";
+const FINISH_TURN = "Battle.FINISH_TURN";
+const I_AM_READY = "Battle.I_AM_READY";
+
+const ENEMY_PLAYER_ID = 0;
+const BOT_PLAYER_ID = 2;
 
 var sfs;
 var room;
 
-const ENEMY_PLAYER_ID = 0;
-const BOT_PLAYER_ID = 2;
+var botPlayer;
+var enemyPlayer;
+var currentPlayerId;
+var grid;
 
 // Connect to Game server
 initConnection();
@@ -19,8 +29,8 @@ function initConnection()
 	var config = {};
 	config.host = "172.16.100.112";
 	config.port = 8080;
-	config.host = "172.16.15.54";
-	config.port = 8888;
+	// config.host = "172.16.15.54";
+	// config.port = 8888;
 	//config.debug = true;
 	config.useSSL = false;
 
@@ -107,7 +117,6 @@ function onConnectionLost(event)
 {
 	trace("Disconnection occurred; reason is: " + event.reason);
 
-	// Reset
 	reset();
 }
 
@@ -130,9 +139,6 @@ function trace(message, prefix, isDebug)
 
 function reset()
 {
-	// Enable interface
-	enableInterface(true);
-
 	// Remove SFS2X listeners
 	sfs.removeEventListener(SFS2X.SFSEvent.CONNECTION, onConnection);
 	sfs.removeEventListener(SFS2X.SFSEvent.CONNECTION_LOST, onConnectionLost);
@@ -220,7 +226,7 @@ function OnExtensionResponse(event)
 			//HandleGems(evtParam);
 			break;
 		case "PLAYER_JOINED_GAME":
-			sfs.send(new SFS2X.ExtensionRequest("Battle.I_AM_READY", new SFS2X.SFSObject(), room));
+			sfs.send(new SFS2X.ExtensionRequest(I_AM_READY, new SFS2X.SFSObject(), room));
 			break;
 	}
 }
@@ -237,25 +243,24 @@ function StartGame(gameSession, room)
 	let botPlayerHero = objBotPlayer.getSFSArray("heroes");
 	let enemyPlayerHero = objEnemyPlayer.getSFSArray("heroes");
 
-	// for (let i = 0; i < botPlayerHero.Size(); i++)
-	// {
-	// 	var hero = new Hero(botPlayerHero.GetSFSObject(i));
-	// 	botPlayer.heroes.Add(hero);
-	// }
+	for (let i = 0; i < botPlayerHero.size(); i++)
+	{
+		botPlayer.heroes.push(new Hero(botPlayerHero.getSFSObject(i)));
+	}
 
-	// for (let i = 0; i < enemyPlayerHero.Size(); i++)
-	// {
-	// 	enemyPlayer.heroes.Add(new Hero(enemyPlayerHero.GetSFSObject(i)));
-	// }
+	for (let i = 0; i < enemyPlayerHero.size(); i++)
+	{
+		enemyPlayer.heroes.push(new Hero(enemyPlayerHero.getSFSObject(i)));
+	}
 
-	// // Gems
-	// grid = new Grid(gameSession.GetSFSArray("gems"), botPlayer.getRecommendGemType());
-	// currentPlayerId = gameSession.GetInt("currentPlayerId");
-	// trace("StartGame ");
+	// Gems
+	grid = new Grid(gameSession.getSFSArray("gems"), botPlayer.getRecommendGemType());
+	currentPlayerId = gameSession.getInt("currentPlayerId");
+	trace("StartGame ");
 
-	// // SendFinishTurn(true);
-	// //taskScheduler.schedule(new FinishTurn(true), new Date(System.currentTimeMillis() + delaySwapGem));
-	// TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
+	// SendFinishTurn(true);
+	//taskScheduler.schedule(new FinishTurn(true), new Date(System.currentTimeMillis() + delaySwapGem));
+	//TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
 }
 
 function AssignPlayers(room) {

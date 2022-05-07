@@ -1,49 +1,41 @@
 class Player
 {
-    // public int playerId;
-    // public string displayName;
-    // public List<Hero> heroes;
-    // public HashSet<GemType> heroGemType;
-
     constructor(playerId, name)
     {
         this.playerId = playerId;
         this.displayName = name;
 
+        this.heroes = [];
+        this.heroGemType = new Set();
         console.log(this);
-
-        //heroes = new List<Hero>();
-        //heroGemType = new HashSet<GemType>();
     }
 
-    // public Hero anyHeroFullMana() {
-    //     foreach(var hero in heroes){
-    //         if (hero.isAlive() && hero.isFullMana()) return hero;
-    //     }
+    anyHeroFullMana() {
+        let arr = this.heroes.filter(hero => hero.isAlive() && hero.isFullMana());
 
-    //     return null;
-    // }
+        let hero = arr != null && arr != undefined && arr.length > 0 ? arr[0] : null;
+        return hero;
+    }
 
-    // public Hero firstHeroAlive() {
-    //     foreach(var hero in heroes){
-    //         if (hero.isAlive()) return hero;
-    //     }
+    firstHeroAlive() {
+        let arr = this.heroes.filter(hero => hero.isAlive());
 
-    //     return null;
-    // }
+        let hero = arr != null && arr != undefined && arr.length > 0 ? arr[0] : null;
+        return hero;
+    }
 
-    // public HashSet<GemType> getRecommendGemType() {
-    //     heroGemType.Clear();
-    //     foreach(var hero in heroes){
-    //         if (!hero.isAlive()) continue;
-            
-    //         foreach(var gt in hero.gemTypes){
-    //             heroGemType.Add((GemType)gt);
-    //         }
-    //     }
+    getRecommendGemType() {
+        this.heroGemType = new Set();
 
-    //     return heroGemType;
-    // }
+        for (let i = 0; i < this.heroes.length; i++){
+            let hero = this.heroes[i];
+
+            for (let j = 0; j < hero.gemTypes.length; j++){
+                let gt = hero.gemTypes[j];
+                this.heroGemType.add(gt);
+            }
+        }        
+
+        return this.heroGemType;
+    }
 }
-
-// module.exports = Player
