@@ -32,7 +32,7 @@ class Player
 
             for (let j = 0; j < hero.gemTypes.length; j++){
                 let gt = hero.gemTypes[j];
-                this.heroGemType.add(gt);
+                this.heroGemType.add(GemType[gt]);
             }
         }        
 
