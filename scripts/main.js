@@ -34,7 +34,7 @@ var enemyPlayer;
 var currentPlayerId;
 var grid;
 
-const username = "truong.lexuan";
+const username = "";
 const token = "bot";
 var visualizer = new Visualizer({ el: '#visual' });
 
@@ -166,7 +166,7 @@ function reset() {
 }
 
 function onLoginBtnClick() {
-	let uName = username;
+	let uName = username || document.querySelector('#accountIn').value;
 	trace("Try login as " + uName);
 
 	let data = new SFS2X.SFSObject();
@@ -296,6 +296,7 @@ function EndGame() {
 	isJoinGameRoom = false;
 
 	document.getElementById("log").innerHTML = "";
+	visualizer.stop();
 }
 
 
