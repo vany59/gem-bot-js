@@ -170,3 +170,10 @@ input {
 .hero {
 	margin: 10px 0;
 }
+
+.gem-icon {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	line-height: 1rem;
+}

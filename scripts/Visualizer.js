@@ -59,7 +59,7 @@ class Visualizer {
     }
 
     renderHero(element, hero) {
-        const gems = hero.gems.map(gem => (`<span style="color: ${GemColor[gem]};">${gem} </span>`))
+        const gems = hero.gems.map(gem => (`<div class="gem-icon" style="background-color: ${GemColor[gem]};">${gem} </div>`))
         const attributes = 
             `
             <div>ID: ${hero.id}</div>
@@ -74,7 +74,7 @@ class Visualizer {
     renderCell(cell, gem) {
         const type = gem ?  gem.type : '';
         cell.innerText = type;
-        cell.style.color = GemColor[type];
+        cell.style.backgroundColor = GemColor[type];
     }
 
     start() {
