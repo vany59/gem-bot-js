@@ -36,6 +36,9 @@ var grid;
 
 const username = "truong.lexuan";
 const token = "bot";
+var visualizer = new Visualizer({ el: '#visual' });
+
+visualizer.start();
 
 // Connect to Game server
 initConnection();
@@ -267,6 +270,13 @@ function StartGame(gameSession, room) {
 	//TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
 
 	setTimeout(function () { SendFinishTurn(true) }, delaySwapGem);
+	visualizer.setGame({ 
+		game: gameSession, 
+		grid, 
+		botPlayer, 
+		enemyPlayer, 
+	});
+
 }
 
 function AssignPlayers(room) {

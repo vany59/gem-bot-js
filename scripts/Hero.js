@@ -25,10 +25,12 @@ class Hero {
         this.maxMana = objHero.getInt("maxMana");
 
         this.gemTypes = [];
-
+        this.gems = [];
         let arrGemTypes = objHero.getSFSArray("gemTypes");
         for (let i = 0; i < arrGemTypes.size(); i++) {
-            this.gemTypes.push(arrGemTypes.getUtfString(i));
+            const gemName = arrGemTypes.getUtfString(i);
+            this.gemTypes.push(gemName);
+            this.gems.push(GemType[gemName]);
         }
     }
 
