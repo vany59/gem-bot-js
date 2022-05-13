@@ -12,13 +12,13 @@ const GemType = {
 
 const GemColor = {
     '-1': 'gray',
-    0: 'black',
-    1: 'green',
-    2: 'yellow',
-    3: 'red',
-    4: 'purple',
-    5: 'blue',
-    6: 'brown'
+    0: '#00000073',
+    1: '#00800080',
+    2: '#ffff0075',
+    3: '#ff000075',
+    4: '#80008080',
+    5: '#0000ff75',
+    6: '#78252570'
 }
 
 const HEIGHT = 8;
