@@ -35,7 +35,11 @@ class Visualizer {
         const cells = this.cells;
         for(var i = 0; i < cells.length; i++) {
             var cell = cells[i] || null;
-            const gem = (gems).find((gem) => gem.index === i);
+            const gemX = i % 8;
+            const gemY = Math.floor(i/8);
+            const gemIndex = (8 * (7 - gemY)) + gemX;
+            const gem = (gems).find((gem) => gem.index === gemIndex);
+
             this.renderCell(cell, gem);
         }
     }
@@ -79,5 +83,18 @@ class Visualizer {
 
     start() {
         this.intervalId = setInterval(visualizer.render.bind(this), 500);
+    }
+
+    stop() {
+        if(!this.intervalId) {
+            return;
+        }
+        this.game = null;
+        this.gameGrid = null;
+        this.botPlayer = null;
+        this.enemyPlayer = null;
+        this.render();
+        clearInterval(this.intervalId);
+        this.intervalId = null;
     }
 }

@@ -8,6 +8,6 @@ class GemSwapInfo {
     }
 
     getIndexSwapGem() {
-        return [index1, index2];
+        return [this.index1, this.index2];
     }
 }

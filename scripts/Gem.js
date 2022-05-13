@@ -25,8 +25,8 @@ const HEIGHT = 8;
 const WIDTH = 8;
 
 class Gem {
-    
-    constructor(index, type){
+
+    constructor(index, type) {
         this.index = index;
         this.type = type;
 
@@ -37,11 +37,11 @@ class Gem {
     }
 
     updatePosition() {
-        this.y = Math.floor(this.index / HEIGHT);
-        this.x = this.index - this.y * WIDTH;
+        this.y = parseInt(this.index / HEIGHT);
+        this.x = parseInt(this.index - this.y * WIDTH);
     }
 
     sameType(other) {
-        return this.type == other.type;
+        return this.type === other.type;
     }
 }
