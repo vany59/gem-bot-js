@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="author" content="Bax">
+	<title>SmartFoxServer 2X | Connector</title>
+
+	<!-- Reset styles -->
+	<link href="css/reset.css" rel="stylesheet" type="text/css" />
+
+	<!-- Set custom styles -->
+	<link href="css/main.css" rel="stylesheet" type="text/css" />
+
+	<!-- Load SFS2X JS API -->
+	<script type="text/javascript" src="libs/sfs2x-api-1.7.11.js"></script>
+
+	<script src="scripts/Player.js"></script>
+	<script src="scripts/Gem.js"></script>
+	<script src="scripts/GemSwapInfo.js"></script>
+	<script src="scripts/Grid.js"></script>
+	<script src="scripts/Hero.js"></script>
+	<script src="scripts/Pair.js"></script>
+
+</head>
+
+<body>
+	<div id="header" class="group">
+		<img id="logo" src="images/logo.png"/>		
+	</div>
+	<div id="main">
+		<div id="controls">
+			<!--<input type="text" id="addressIn" placeholder="Enter address" value="172.16.100.112:8080" readonly />
+			 <input type="text" id="portIn" placeholder="Enter port" value="8080" />
+			<input type="checkbox" id="debugCb" /> Show debug
+			<input type="button" id="connectBt" value="Connect" onclick="onConnectBtClick()" />
+			<input type="button" id="disconnectBt" value="Disconnect" onclick="onDisconnectBtClick()" style="display: none;" /> -->
+
+			<input type="text" id="accountIn" placeholder="Enter account" value="tung.tranhuy" />
+			<input type="button" id="loginBtn" value="Login" onclick="onLoginBtnClick()" />
+			<input type="button" id="findBtn" value="Find Match" onclick="findGame()" style="visibility: hidden;" />
+		</div>
+		<div id="log">
+			<strong>Connection log</strong><br>
+			Enter the server address and port and click the <em>Connect</em> button
+		</div>
+	</div>
+
+	<!-- Load main script -->
+	
+	<script type="text/javascript" src="scripts/main.js"></script>
+	
+</body>
+</html>
