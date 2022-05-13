@@ -15,6 +15,9 @@ var botPlayer;
 var enemyPlayer;
 var currentPlayerId;
 var grid;
+var visualizer = new Visualizer({ el: '#visual' });
+
+visualizer.start();
 
 // Connect to Game server
 initConnection();
@@ -261,6 +264,13 @@ function StartGame(gameSession, room)
 	// SendFinishTurn(true);
 	//taskScheduler.schedule(new FinishTurn(true), new Date(System.currentTimeMillis() + delaySwapGem));
 	//TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
+	visualizer.setGame({ 
+		game: gameSession, 
+		grid, 
+		botPlayer, 
+		enemyPlayer, 
+	});
+
 }
 
 function AssignPlayers(room) {
