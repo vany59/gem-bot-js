@@ -23,7 +23,7 @@ const BATTLE_MODE = "BATTLE_MODE";
 const ENEMY_PLAYER_ID = 0;
 const BOT_PLAYER_ID = 2;
 
-const delaySwapGem = 2000;
+const delaySwapGem = 3500;
 const delayFindGame = 5000;
 
 var sfs;
@@ -303,8 +303,8 @@ function EndGame() {
 function SendFinishTurn(isFirstTurn) {
 	let data = new SFS2X.SFSObject();
 	data.putBool("isFirstTurn", isFirstTurn);
-	log("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + FINISH_TURN + " first turn " + isFirstTurn);
-	trace("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + FINISH_TURN + " first turn " + isFirstTurn);
+	log("sendExtensionRequest()|room:" + room.name + "|extCmd:" + FINISH_TURN + " first turn " + isFirstTurn);
+	trace("sendExtensionRequest()|room:" + room.name + "|extCmd:" + FINISH_TURN + " first turn " + isFirstTurn);
 
 	SendExtensionRequest(FINISH_TURN, data);
 
