@@ -9,10 +9,21 @@ class Visualizer {
         this.gameGrid = grid;
         this.botPlayer = botPlayer;
         this.enemyPlayer = enemyPlayer;
+        this.snapshots = [];
     } 
     
     init() {
         this.initGrid();
+        this.initSlider();
+    }
+
+    initSlider() {
+        this.sliderEl = this.element.querySelector('#slider');
+        this.sliderEl.oninput = this.onSliderChange.bind(this);
+    }
+
+    onSliderChange(evt) {
+        this.restore(evt.target.value);
     }
 
     initGrid() {
@@ -67,10 +78,10 @@ class Visualizer {
         const attributes = 
             `
             <div>ID: ${hero.id}</div>
-            <div>Name: ${hero.name || ''}</div>
+            <div>Attack: ${hero.attack}</div>
             <div>Hp: ${hero.hp}</div>
             <div>Mana: ${hero.mana}/${hero.maxMana}</div>
-            <div>Gems: ${gems.join(', ')}</div>
+            <div>Gems: ${gems.join('&nbsp;')}</div>
             `
         element.innerHTML = attributes;
     }
@@ -96,5 +107,35 @@ class Visualizer {
         this.render();
         clearInterval(this.intervalId);
         this.intervalId = null;
+    }
+
+    snapShot() {
+        this.snapshots = this.snapshots || [];
+        const snapshot = {
+            gameGrid: this.gameGrid,
+            botPlayer: this.botPlayer,
+            enemyPlayer: this.enemyPlayer,
+            logText: this.logText
+        };
+        const clone = JSON.parse(JSON.stringify(snapshot));
+        this.snapshots.push(clone);
+        this.sliderEl.max = this.snapshots.length;
+        this.sliderEl.value = this.snapshots.length;
+    }
+
+    restore(index) {
+        if(!this.snapshots || this.snapshots.length <= index) {
+            return;
+        }
+        const snapshot = this.snapshots[index];
+        this.gameGrid = snapshot.gameGrid;
+        this.botPlayer = snapshot.botPlayer;
+        this.enemyPlayer = snapshot.enemyPlayer;
+        this.logText = snapshot.logText;
+        document.getElementById("log").innerHTML = this.logText;
+    }
+
+    log(text) {
+        this.logText =  text;
     }
 }

@@ -23,7 +23,7 @@ const BATTLE_MODE = "BATTLE_MODE";
 const ENEMY_PLAYER_ID = 0;
 const BOT_PLAYER_ID = 2;
 
-const delaySwapGem = 3500;
+const delaySwapGem = 2000;
 const delayFindGame = 5000;
 
 var sfs;
@@ -42,6 +42,14 @@ visualizer.start();
 
 // Connect to Game server
 initConnection();
+
+const params = new Proxy(new URLSearchParams(window.location.search), {
+	get: (searchParams, prop) => searchParams.get(prop),
+});
+
+if(params.username) {
+	document.querySelector('#accountIn').value = params.username;
+}
 
 function initConnection() {
 	document.getElementById("log").innerHTML = "";
@@ -147,7 +155,9 @@ function trace(message, prefix, isDebug) {
 	if (isDebug)
 		message = "<pre>" + message.replace(/(?:\r\n|\r|\n)/g, "<br>") + "</pre>";
 
-	document.getElementById("log").innerHTML = text + open + message + close;
+	const log = text + open + message + close;
+	document.getElementById("log").innerHTML = log;
+	visualizer.log(log);
 }
 
 
@@ -296,7 +306,7 @@ function EndGame() {
 	isJoinGameRoom = false;
 
 	document.getElementById("log").innerHTML = "";
-	visualizer.stop();
+	visualizer.snapShot();
 }
 
 
@@ -318,6 +328,8 @@ function StartTurn(param) {
 		return;
 	}
 
+	visualizer.snapShot();
+
 	let heroFullMana = botPlayer.anyHeroFullMana();
 
 	if (heroFullMana != null) {
@@ -326,7 +338,6 @@ function StartTurn(param) {
 	}
 
 	setTimeout(function () { SendSwapGem() }, delaySwapGem);
-
 
 }
 

@@ -46,6 +46,11 @@ body {
 	padding: 0 20px;
 }
 
+#log {
+	max-height: calc(100vh - 420px);
+    overflow: scroll;
+}
+
 #log div {
 	margin-bottom: 10px;
 }
@@ -178,4 +183,8 @@ input {
 	line-height: 1rem;
 	text-align: center;
     vertical-align: middle;
+}
+
+#slider {
+	width: 100%;
 }
