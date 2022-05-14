@@ -7,7 +7,6 @@ class Player
 
         this.heroes = [];
         this.heroGemType = new Set();
-        console.log(this);
     }
 
     anyHeroFullMana() {
