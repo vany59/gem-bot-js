@@ -23,6 +23,7 @@
 	<script src="scripts/Pair.js"></script>
 	<script src="scripts/Visualizer.js"></script>
 
+	<script src="strategies/AotStrategy/AotStrategy.js"></script>
 </head>
 
 <body>
@@ -162,6 +163,24 @@
 	</div>
 
 	<!-- Load main script -->
+
+	<script type="text/javascript">
+		window.params = new Proxy(new URLSearchParams(window.location.search), {
+			get: (searchParams, prop) => searchParams.get(prop),
+		});
+	</script>
+
+	<script type="text/javascript">
+		if(params && params.strategy) {
+			const strategyClass = window.strategies[params.strategy];
+
+			if(!strategyClass) {
+				console.log(`Strategy ${window.params.strategy} is not defined.`);
+			} else {
+				window.strategy = strategyClass.factory();	
+			}
+		}
+	</script>
 	
 	<script type="text/javascript" src="scripts/main.js"></script>
 	

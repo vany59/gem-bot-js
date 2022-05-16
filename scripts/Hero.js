@@ -25,6 +25,7 @@ const HeroIdEnum = {
 
 class Hero {
     constructor(objHero) {
+        this.objHero = objHero;
         this.playerId = objHero.getInt("playerId");
         this.id = objHero.getUtfString("id");
         //this.name = id.name();
@@ -60,5 +61,38 @@ class Hero {
 
     isHeroSelfSkill() {
         return HeroIdEnum.SEA_SPIRIT == this.id;
+    }
+
+    couldTakeMana(type) {
+        return this.isAcceptManaType(type) && !this.isFullMana();
+    }
+
+    isAcceptManaType(type) {
+        return this.gems.includes(type);
+    }
+
+    getMaxManaCouldTake() {
+        return this.maxMana - this.mana;
+    }
+
+    takeDamge(damge) {
+        this.hp = this.hp - damge;
+    }
+
+    takeMana(value) {
+        this.mana += value;
+    }
+
+    clone() {
+        const cloned = new Hero(this.objHero);
+        cloned.playerId = this.playerId;
+        cloned.id = this.id;
+        cloned.attack = this.attack;
+        cloned.hp = this.hp;
+        cloned.mana = this.mana;
+        cloned.maxMana = this.maxMana;
+        cloned.gemTypes = this.gemTypes;
+        cloned.gems = this.gems;
+        return cloned;
     }
 }
