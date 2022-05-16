@@ -44,9 +44,9 @@ visualizer.start();
 // Connect to Game server
 initConnection();
 
-const params = new Proxy(new URLSearchParams(window.location.search), {
-	get: (searchParams, prop) => searchParams.get(prop),
-});
+// const params = new Proxy(new URLSearchParams(window.location.search), {
+// 	get: (searchParams, prop) => searchParams.get(prop),
+// });
 
 if (params.username) {
 	document.querySelector('#accountIn').value = params.username;
