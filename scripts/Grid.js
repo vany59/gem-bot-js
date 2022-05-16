@@ -1,8 +1,14 @@
+function union (sets) {
+    return sets.reduce((combined, list) => {
+      return new Set([...combined, ...list]);
+    }, new Set());
+  }
+
 class Grid {
     constructor(gemsCode, gemTypes) {
         this.gems = [];
+        this.gemeCode = gemsCode;
         this.gemTypes = new Set();
-
         this.updateGems(gemsCode);
 
         this.myHeroGemType = gemTypes;
@@ -10,6 +16,7 @@ class Grid {
 
     updateGems(gemsCode) {
         this.gems = [];
+        this.gemeCode = gemsCode;
         this.gemTypes = new Set();
 
         for (let i = 0; i < gemsCode.size(); i++) {
@@ -71,8 +78,6 @@ class Grid {
 
         const tempGems = [...this.gems];
 
-        console.log("tempGems: ", tempGems);
-
         tempGems.forEach(currentGem => {
 
             let swapGem = null;
@@ -112,6 +117,10 @@ class Grid {
 
     checkMatchSwapGem(listMatchGem, currentGem, swapGem) {
 
+        if(currentGem.locked || swapGem.locked) {
+            return;
+        }
+
         this.swap(currentGem, swapGem);
 
         let matchGems = this.matchesAt(parseInt(currentGem.x), parseInt(currentGem.y));
@@ -120,9 +129,6 @@ class Grid {
 
 
         if (matchGems.size > 0) {
-
-            console.log("GemSwapInfo currentGem.index: ", currentGem.index, "swapGem.index: ", swapGem.index);
-
             listMatchGem.push(new GemSwapInfo(currentGem.index, swapGem.index, matchGems.length, currentGem.type));
         }
     }
@@ -150,10 +156,20 @@ class Grid {
         b.y = tempY;
     }
 
+    swapIndex(index1, index2) {
+        const gem1 = this.gems[index1];
+        const gem2 = this.gems[index2];
+        return this.swap(gem1, gem2);
+    }
+
     matchesAt(x, y) {
         let res = new Set();
 
         let center = this.gemAt(x, y);
+
+        if(center.type === -1 || center.removed || center.locked) {
+            return res;
+        }
 
         if (center === undefined) {
 
@@ -219,5 +235,110 @@ class Grid {
     // Find Gem at Position (x, y)
     gemAt(x, y) {
         return this.gems.find(g => g.x === x && g.y === y)
+    }
+
+    performSwap(index1, index2) {
+        const currentGem = this.gems[index1];
+        const swapGem = this.gems[index2];
+        console.log(currentGem, swapGem);
+        this.swap(currentGem, swapGem);
+        const allMatchGems = this.getAllMatches();
+        const result = this.performDistinction(allMatchGems);
+        return result;
+    }
+    
+    getAllMatches() {
+        const matches = [];
+        for(const gem of this.gems) {
+            const matchGems = this.matchesAt(parseInt(gem.x), parseInt(gem.y)); 
+            if(matchGems.size > 0) {
+                matches.push(matchGems);
+            }
+        }
+        return matches.length > 0 ? [union(matches)] : [];
+    }
+    
+    performDistinction(allMatchGems) {
+        const removedBatch = [];
+        for(const matchGems of allMatchGems) {
+            const removed = this.distinctGemBatch(matchGems)
+            removedBatch.push(removed);
+        }
+        this.performReshape();
+        const nextMatches = this.getAllMatches();
+        if(nextMatches.length > 0) {
+            const nextRemoved = this.performDistinction(nextMatches);
+            removedBatch.push(...nextRemoved);
+        } 
+        return removedBatch;
+    }
+
+    distinctGemBatch(gems) {
+        const removedGems = [];
+        const matchSize = gems.size;
+        const maxLinearMatchSize = this.maxLinearMatch(gems);
+        for(const gem of gems) {
+            const removed = this.distinctGem(gem);
+            removedGems.push(removed);
+        }
+        const isExtraTurn = maxLinearMatchSize > 4;
+        return {
+            matchSize,
+            removedGems,
+            isExtraTurn
+        }
+    }
+
+    maxLinearMatch(gems) {
+        const matchesX = {};
+        const matchesY = {};
+
+        for(const gem of gems) {
+            matchesX[gem.x] = matchesX[gem.x] ? 1 : matchesX[gem.x] + 1;  
+            matchesY[gem.y] = matchesY[gem.y] ? 1 : matchesY[gem.y] + 1;  
+        }
+
+        const maxX = Math.max(...Object.values(matchesX));
+        const maxY = Math.max(...Object.values(matchesY));
+        return Math.max(maxX, maxY);
+
+    }
+
+    distinctGem(gem) {
+        gem.removed = true;
+        return gem.clone();
+    }
+
+    performReshape() {
+        for(const gem of this.gems) {
+            if(gem.removed) {
+                const aboveGem = this.gemAt(gem.x, gem.y + 1);
+                if(!aboveGem) {
+                    gem.removed = false;
+                    gem.locked = true;
+                    gem.type = -1;
+                } else {
+                    gem.type = aboveGem.type;
+                    gem.locked = aboveGem.locked;
+                    gem.removed = aboveGem.removed;
+                    aboveGem.removed = true;
+                    aboveGem.type = -1;
+                }
+            }
+        }
+
+        const toRemove = this.gems.find(gem => gem.removed);
+        if(toRemove) {
+            this.performReshape();
+        }
+        return false;
+    }
+
+    clone() {
+        const cloned = new Grid({ size: () => 0 }, new Set());
+        cloned.gems = this.gems.map(gem => gem.clone());
+        cloned.gemTypes = new Set(Array.from(this.gemTypes));
+        this.myHeroGemType = new Set(Array.from(this.myHeroGemType));
+        return cloned;
     }
 }

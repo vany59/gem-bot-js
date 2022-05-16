@@ -37,15 +37,12 @@ var grid;
 const username = "";
 const token = "bot";
 var visualizer = new Visualizer({ el: '#visual' });
-
+var params = window.params;
+var strategy = window.strategy;
 visualizer.start();
 
 // Connect to Game server
 initConnection();
-
-const params = new Proxy(new URLSearchParams(window.location.search), {
-	get: (searchParams, prop) => searchParams.get(prop),
-});
 
 if(params.username) {
 	document.querySelector('#accountIn').value = params.username;
@@ -287,6 +284,18 @@ function StartGame(gameSession, room) {
 		enemyPlayer, 
 	});
 
+	if(strategy) {
+		strategy.setGame({
+			game: gameSession, 
+			grid, 
+			botPlayer, 
+			enemyPlayer, 
+		});
+
+		strategy.addSwapGemHandle(SendSwapGem);
+		strategy.addCastSkillHandle(SendCastSkill); 
+	}
+
 }
 
 function AssignPlayers(room) {
@@ -323,22 +332,26 @@ function SendFinishTurn(isFirstTurn) {
 
 function StartTurn(param) {
 	currentPlayerId = param.getInt("currentPlayerId");
-
-	if (!isBotTurn()) {
-		return;
-	}
-
 	visualizer.snapShot();
 
-	let heroFullMana = botPlayer.anyHeroFullMana();
+	setTimeout(function() {
+		if (!isBotTurn()) {
+			trace("not isBotTurn");
+			return;
+		}
+		
+		if(strategy) {
+			strategy.playTurn();
+			return;
+		}
+		let heroFullMana = botPlayer.anyHeroFullMana();
+		if (heroFullMana != null) {
+			SendCastSkill(heroFullMana)
+		} else {
+			SendSwapGem()
+		}
 
-	if (heroFullMana != null) {
-		setTimeout(function () { SendCastSkill(heroFullMana) }, delaySwapGem);
-		return;
-	}
-
-	setTimeout(function () { SendSwapGem() }, delaySwapGem);
-
+	}, delaySwapGem);
 }
 
 function isBotTurn() {
@@ -347,20 +360,34 @@ function isBotTurn() {
 
 
 
-function SendCastSkill(heroCastSkill) {
+function SendCastSkill(heroCastSkill, { targetId, selectedGem, gemIndex, isTargetAllyOrNot } = {}) {
 	var data = new SFS2X.SFSObject();
 
 	data.putUtfString("casterId", heroCastSkill.id.toString());
-	if (heroCastSkill.isHeroSelfSkill()) {
+	if(targetId) {
+		data.putUtfString("targetId", targetId);
+	} else if (heroCastSkill.isHeroSelfSkill()) {
 		data.putUtfString("targetId", botPlayer.firstHeroAlive().id.toString());
 	} else {
 		data.putUtfString("targetId", enemyPlayer.firstHeroAlive().id.toString());
 	}
 	console.log("selectedGem:  ", SelectGem());
+	if(selectedGem) {
+		data.putUtfString("selectedGem", selectedGem);
+	} {
+		data.putUtfString("selectedGem", SelectGem().toString());
+	}
+	if(gemIndex) {
+		data.putUtfString("gemIndex", gemIndex);
+	} {
+		data.putUtfString("gemIndex", GetRandomInt(64).toString());
+	}
 
-	data.putUtfString("selectedGem", SelectGem().toString());
-	data.putUtfString("gemIndex", GetRandomInt(64).toString());
-	data.putBool("isTargetAllyOrNot", false);
+	if(isTargetAllyOrNot) {
+		data.putBool("isTargetAllyOrNot", isTargetAllyOrNot);
+	} else {
+		data.putBool("isTargetAllyOrNot", false);
+	}
 	log("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + USE_SKILL + "|Hero cast skill: " + heroCastSkill.name);
 	trace("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + USE_SKILL + "|Hero cast skill: " + heroCastSkill.name);
 	
@@ -368,8 +395,8 @@ function SendCastSkill(heroCastSkill) {
 
 }
 
-function SendSwapGem() {
-	let indexSwap = grid.recommendSwapGem();
+function SendSwapGem(swap) {
+	let indexSwap = swap ? swap.getIndexSwapGem() :  grid.recommendSwapGem();
 
 	log("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + SWAP_GEM + "|index1: " + indexSwap[0] + " index2: " + indexSwap[1]);
 	trace("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + SWAP_GEM + "|index1: " + indexSwap[0] + " index2: " + indexSwap[1]);

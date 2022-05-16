@@ -44,4 +44,13 @@ class Gem {
     sameType(other) {
         return this.type === other.type;
     }
+
+    markAsRemoved() {
+        this.removed = true;
+    }
+
+    clone() {
+        const cloned = new Gem(this.index, this.type);
+        return cloned;
+    }
 }
