@@ -47,7 +47,7 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 	get: (searchParams, prop) => searchParams.get(prop),
 });
 
-if(params.username) {
+if (params.username) {
 	document.querySelector('#accountIn').value = params.username;
 }
 
@@ -269,7 +269,7 @@ function StartGame(gameSession, room) {
 	}
 
 	// Gems
-	grid = new Grid(gameSession.getSFSArray("gems"), botPlayer.getRecommendGemType());
+	grid = new Grid(gameSession.getSFSArray("gems"), null, botPlayer.getRecommendGemType());
 	currentPlayerId = gameSession.getInt("currentPlayerId");
 	trace("StartGame ");
 
@@ -280,11 +280,11 @@ function StartGame(gameSession, room) {
 	//TaskSchedule(delaySwapGem, _ => SendFinishTurn(true));
 
 	setTimeout(function () { SendFinishTurn(true) }, delaySwapGem);
-	visualizer.setGame({ 
-		game: gameSession, 
-		grid, 
-		botPlayer, 
-		enemyPlayer, 
+	visualizer.setGame({
+		game: gameSession,
+		grid,
+		botPlayer,
+		enemyPlayer,
 	});
 
 }
@@ -293,8 +293,10 @@ function AssignPlayers(room) {
 	let user1 = room.getPlayerList()[0];
 	trace("id user1: " + user1.name);
 
-	if (user1.IsItMe) {
-		botPlayer = new Player(user1.PlayerId, "player1");
+	if (user1.isItMe) {
+		let playerId = Array.from(user1._playerIdByRoomId).map(([name, value]) => (value))[1];
+		
+		botPlayer = new Player(playerId, "player1");
 		enemyPlayer = new Player(ENEMY_PLAYER_ID, "player2");
 	} else {
 		botPlayer = new Player(BOT_PLAYER_ID, "player2");
@@ -324,6 +326,8 @@ function SendFinishTurn(isFirstTurn) {
 function StartTurn(param) {
 	currentPlayerId = param.getInt("currentPlayerId");
 
+	console.log("StartTurn");
+
 	if (!isBotTurn()) {
 		return;
 	}
@@ -336,6 +340,7 @@ function StartTurn(param) {
 		setTimeout(function () { SendCastSkill(heroFullMana) }, delaySwapGem);
 		return;
 	}
+
 
 	setTimeout(function () { SendSwapGem() }, delaySwapGem);
 
@@ -363,7 +368,7 @@ function SendCastSkill(heroCastSkill) {
 	data.putBool("isTargetAllyOrNot", false);
 	log("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + USE_SKILL + "|Hero cast skill: " + heroCastSkill.name);
 	trace("sendExtensionRequest()|room:" + room.Name + "|extCmd:" + USE_SKILL + "|Hero cast skill: " + heroCastSkill.name);
-	
+
 	SendExtensionRequest(USE_SKILL, data);
 
 }
@@ -403,15 +408,20 @@ function HandleGems(paramz) {
 	// update information of hero
 	HandleHeroes(lastSnapshot);
 	if (needRenewBoard) {
-		grid.updateGems(paramz.getSFSArray("renewBoard"));
+		grid.updateGems(paramz.getSFSArray("renewBoard"), null);
 		// TaskSchedule(delaySwapGem, _ => SendFinishTurn(false));
 		setTimeout(function () { SendFinishTurn(false) }, delaySwapGem);
 		return;
 	}
 	// update gem
 	grid.gemTypes = botPlayer.getRecommendGemType();
-	grid.updateGems(lastSnapshot.getSFSArray("gems"));
-	// TaskSchedule(delaySwapGem, _ => SendFinishTurn(false));
+
+	let gemCode = lastSnapshot.getSFSArray("gems");
+	let gemModifiers = lastSnapshot.getSFSArray("gemModifiers");
+
+	console.log("gemModifiers : ", gemModifiers);
+
+	grid.updateGems(gemCode, gemModifiers);
 
 	setTimeout(function () { SendFinishTurn(false) }, delaySwapGem);
 }

@@ -1,19 +1,19 @@
 class Grid {
-    constructor(gemsCode, gemTypes) {
+    constructor(gemsCode, gemModifiers, gemTypes) {
         this.gems = [];
         this.gemTypes = new Set();
 
-        this.updateGems(gemsCode);
+        this.updateGems(gemsCode, gemModifiers);
 
         this.myHeroGemType = gemTypes;
     }
 
-    updateGems(gemsCode) {
+    updateGems(gemsCode, gemModifiers) {
         this.gems = [];
         this.gemTypes = new Set();
 
         for (let i = 0; i < gemsCode.size(); i++) {
-            let gem = new Gem(i, gemsCode.getByte(i));
+            let gem = new Gem(i, gemsCode.getByte(i), gemModifiers != null ? gemModifiers.getByte(i) : GemModifier.NONE);
             this.gems.push(gem);
 
             this.gemTypes.add(gem.type);
