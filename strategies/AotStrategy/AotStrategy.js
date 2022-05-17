@@ -4,25 +4,47 @@ class AotGameState {
     this.grid = grid;
     this.botPlayer = botPlayer;
     this.enemyPlayer = enemyPlayer;
+    this.currentPlayer = botPlayer;
     this.distinctions = [];
+  }
+
+  isGameOver() {
+    return this.botPlayer.isLose() || this.enemyPlayer.isLose();
   }
 
   isExtraturn() {
     return this.hasExtraTurn;
   }
 
+  isBotTurn() {
+    return this.currentPlayer.sameOne(this.botPlayer);
+  }
+
   switchTurn() {
-    const { enemyPlayer, botPlayer } = this;
-    this.botPlayer = enemyPlayer;
-    this.enemyPlayer = botPlayer;
+    if(this.isBotTurn()) {
+      this.currentPlayer = this.botPlayer;
+    } else {
+      this.currentPlayer = this.enemyPlayer;
+    }
   }
 
   getCurrentPlayer() {
-    return this.botPlayer;
+    if(this.isBotTurn()) {
+      return this.botPlayer;
+    }
+    return this.enemyPlayer;
   }
 
   getCurrentEnemyPlayer() {
-    return this.enemyPlayer;
+    if(this.isBotTurn()) {
+      return this.enemyPlayer;
+    }
+    return this.botPlayer;
+  }
+
+  copyTurn(other) {
+    this.botPlayer = other.botPlayer;
+    this.enemyPlayer
   }
 
   addDistinction(result) {
@@ -86,7 +108,90 @@ class SumScale extends ScaleFn {
   }
 }
 
+class TurnEfect {
+  attackGem = 0;
+  manaGem = {};
+  buffAttack = 0;
+  buffExtraTurn = 0;
+  buffHitPoint = 0;
+  buffMana = 0;
+  buffPoint = 0;
+  maxMatchedSize = 0;
+
+  static fromDistinction(distinction) {
+    const turnEffect = new TurnEfect();
+    const maxMatchedSize = Math.max(...distinction.matchesSize);
+    turnEffect.maxMatchedSize = maxMatchedSize;
+
+    for (const gem of distinction.removedGems) {
+      if(gem.type == GemType.SWORD) {
+        turnEffect.applyAttack(gem);
+      } else {
+        turnEffect.applyCollect(gem);
+      }
+
+      if(gem.modifier == GemModifier.BUFF_ATTACK) {
+        turnEffect.applyBuffAttack(gem);
+      }
+
+      if(gem.modifier == GemModifier.EXTRA_TURN) {
+        turnEffect.applyExtraTurn(gem);
+      }
+
+      if(gem.modifier == GemModifier.HIT_POINT) {
+        turnEffect.applyHitPoint(gem);
+      }
+
+
+      if(gem.modifier == GemModifier.MANA) {
+        turnEffect.applyMana(gem);
+      }
+
+      if(gem.modifier == GemModifier.POINT) {
+        turnEffect.applyPoint(gem);
+      }
+    }
+
+    return turnEffect;
+  }
+  applyBuffAttack(gem) {
+    this.buffAttack += 1;
+  }
+
+  applyExtraTurn(gem) {
+    this.buffExtraTurn += 1;
+  }
+
+  applyHitPoint(gem) {
+    this.buffHitPoint += 1;
+  }
+
+  applyMana(gem) {
+    this.buffMana += 1;
+  }
+
+  applyPoint(gem) {
+    this.buffPoint += 0;
+  }
+
+  applyAttack(gem){
+    this.attackGem += 1;
+  }
+
+  applyCollect(gem) {
+    if(!this.manaGem[gem.type]) {
+      this.manaGem[gem.type] = 0;
+    }
+    this.manaGem[gem.type] += 1;
+  }
+}
+
 class GameSimulator {
+  buffAttackMetric = new LinearScale(2, 0);
+  buffHitPointMetric = new LinearScale(2, 0);
+  buffManaMetric = new LinearScale(2, 0);
+  damgeMetric = new AttackDamgeMetric();
+
   constructor(state) {
     this.state = state;
   }
@@ -113,29 +218,8 @@ class GameSimulator {
   }
 
   applyDistinctionResult(result) {
-    this.turnEffect = {
-      attackGem: 0,
-      manaGem: {},
-    };
-
-    for (const batch of result) {
-      if (batch.isExtraTurn) {
-        this.state.isExtraTurn = true;
-      }
-
-      for (const gem of batch.removedGems) {
-        switch (gem.type) {
-          case GemType.SWORD: {
-            this.turnEffect.attackGem += 1;
-          }
-          default: {
-            this.turnEffect.manaGem[gem.type] =
-              (this.turnEffect.manaGem[gem.type] || 0) + 1;
-          }
-        }
-      }
-    }
-    this.applyTurnEffect(this.turnEffect);
+    const turnEffect = TurnEfect.fromDistinction(result);
+    this.applyTurnEffect(turnEffect);
     this.state.addDistinction(result);
   }
 
@@ -144,12 +228,52 @@ class GameSimulator {
     for (const [type, value] of Object.entries(turn.manaGem)) {
       this.applyMana(type, value);
     }
+    this.applyMaxMatchedSize(turn.maxMatchedSize);
+    this.applyBuffAttack(turn.buffAttack);
+    this.applyBuffMana(turn.buffMana);
+    this.applyHitPoint(turn.buffHitPoint);
+    this.applyBuffExtraTurn(turn.buffExtraTurn);
+  }
+
+  applyMaxMatchedSize(value) {
+    if(value >= 5) {
+      this.state.hasExtraTurn = value > 0;
+    }
+  }
+
+  applyBuffExtraTurn(value) {
+    if(value > 0) {
+      this.state.hasExtraTurn = value > 0;
+    }
+  }
+
+  applyBuffMana(value) {
+    const additionalMana = this.buffManaMetric.exec(value);
+    this.state
+      .getCurrentPlayer()
+      .getHerosAlive()
+      .forEach(hero => hero.buffMana(additionalMana));
+  }
+
+  applyHitPoint(value) {
+    const additionalHp = this.buffHitPointMetric.exec(value);
+    this.state
+      .getCurrentPlayer()
+      .getHerosAlive()
+      .forEach(hero => hero.buffHp(additionalHp));
+  }
+
+  applyBuffAttack(value) {
+    const additionalAttack = this.buffAttackMetric.exec(value);
+    this.state
+      .getCurrentPlayer()
+      .getHerosAlive()
+      .forEach(hero => hero.buffAttack(additionalAttack));
   }
 
   applyAttack(attackGem) {
     const myHeroAlive = this.state.getCurrentPlayer().firstHeroAlive();
-    const damgeMetric = new AttackDamgeMetric();
-    const attackDame = 1 * damgeMetric.exec(attackGem, myHeroAlive);
+    const attackDame = this.damgeMetric.exec(attackGem, myHeroAlive);
     const enemyHeroAlive = this.state.getCurrentEnemyPlayer().firstHeroAlive();
     enemyHeroAlive.takeDamge(attackDame);
   }
@@ -175,6 +299,12 @@ class GameSimulator {
   applyCastSkill(move) {}
 }
 
+class AttackDamgeScoreMetric {
+  exec(hero, enemyPlayer) {
+    //todo: check has hero counter phisical damge 
+    return hero.attack;
+  }
+}
 class AotScoreMetric {
   score = 0;
   sumMetric = new SumScale();
@@ -182,25 +312,27 @@ class AotScoreMetric {
   manaMetric = new LinearScale(1, 0);
   maxManaMetric = new LinearScale(0, 3);
   overManaMetric = new LinearScale(-1, 0);
+  attackMetric = new AttackDamgeScoreMetric(1, 0);
 
-  caclcHeroScore(hero) {
+  caclcHeroScore(hero, enemyPlayer) {
     const hpScore = this.hpMetric.exec(hero.hp);
     const manaScore = this.maxManaMetric.exec(hero.mana);
     const overManaScore = this.overManaMetric.exec(0);
-    const heroScore = this.sumMetric.exec(hpScore, manaScore, overManaScore);
+    const attackScore = this.attackMetric.exec(hero, enemyPlayer)
+    const heroScore = this.sumMetric.exec(hpScore, manaScore, overManaScore, attackScore);
     return heroScore;
   }
 
-  calcScoreOfPlayer(player) {
+  calcScoreOfPlayer(player, enemyPlayer) {
     const heros = player.getHerosAlive();
-    const heroScores = heros.map((hero) => this.caclcHeroScore(hero));
+    const heroScores = heros.map((hero) => this.caclcHeroScore(hero, enemyPlayer));
     const totalHeroScore = this.sumMetric.exec(...heroScores);
     return totalHeroScore;
   }
 
   calc(state) {
-    const myScore = this.calcScoreOfPlayer(state.getCurrentPlayer());
-    const enemyScore = this.calcScoreOfPlayer(state.getCurrentEnemyPlayer());
+    const myScore = this.calcScoreOfPlayer(state.getCurrentPlayer(), state.getCurrentEnemyPlayer(), state);
+    const enemyScore = this.calcScoreOfPlayer(state.getCurrentEnemyPlayer(), state.getCurrentPlayer(), state);
     const score = myScore - enemyScore;
     return score;
   }
@@ -222,9 +354,11 @@ class AoTStrategy {
 
   playTurn() {
     console.log(`${AoTStrategy.name}: playTurn`);
-    const state = this.getCurrentState();
-    const action = this.chooseBestPosibleMove(state, 1);
-    console.log(action);
+    const action = this.chooseBestPosibleMove(this.state, 1);
+    if(!action) {
+      console.log("Cannot choose");
+      return;
+    }
     if (action.isCastSkill) {
       console.log(`${AoTStrategy.name}: isCastSkill`);
       this.castSkillHandle(action.hero);
@@ -235,32 +369,25 @@ class AoTStrategy {
   }
 
   getCurrentState() {
-    console.log(`${AoTStrategy.name}: getCurrentState`);
     return this.state.clone();
   }
 
   chooseBestPosibleMove(state, deep = 2) {
     console.log(`${AoTStrategy.name}: chooseBestPosibleMove`);
     const posibleMoves = this.getAllPosibleMove(state);
-    console.log(`${AoTStrategy.name}: posibleMoves ${posibleMoves.length}`);
-
+    if(!posibleMoves || posibleMoves.length == 0) {
+      return null;
+    }
     let currentBestMove = posibleMoves[0];
-    let currentBestMoveScore = -1;
+    let currentBestMoveScore = Number.NEGATIVE_INFINITY;
     for (const move of posibleMoves) {
-      console.log(
-        `${AoTStrategy.name}: currentBestMove  ${posibleMoves.indexOf(move)}`
-      );
-      console.log(
-        `${AoTStrategy.name}: currentBestMoveScore  ${currentBestMoveScore}`
-      );
-
       const futureState = this.seeFutureState(move, state, deep);
       const simulateMoveScore = this.compareScoreOnStates(state, futureState);
       console.log(
         `${AoTStrategy.name}: simulateMoveScore  ${simulateMoveScore}`
       );
 
-      if (simulateMoveScore > currentBestMove) {
+      if (simulateMoveScore > currentBestMoveScore) {
         currentBestMove = move;
         currentBestMoveScore = simulateMoveScore;
       }
@@ -269,26 +396,40 @@ class AoTStrategy {
   }
 
   seeFutureState(move, state, deep) {
-    if (deep === 0) {
+    console.log("See the future", deep);
+    if (deep === 0 || !move) {
       return state;
     }
 
-    const futureState = this.applyMoveOnState(move, state);
+    if(state.isGameOver()) {
+      return state;
+    }
+
+    const clonedState = state.clone();
+    clonedState.hasExtraTurn = false;
+
+    const futureState = this.applyMoveOnState(move, clonedState);
     if (futureState.isExtraturn()) {
       const newMove = this.chooseBestPosibleMove(futureState, deep);
       return this.seeFutureState(newMove, futureState, deep);
     }
+
+    futureState.switchTurn();
     const newMove = this.chooseBestPosibleMove(futureState, deep - 1);
-    return this.seeFutureState(newMove, futureState, deep - 1);
+    const afterState = this.seeFutureState(newMove, futureState, deep - 1);
+    return afterState;
   }
 
   compareScoreOnStates(state1, state2) {
     console.log(`${AoTStrategy.name}: compareScoreOnState`);
     const score1 = this.caculateScoreOnState(state1);
-    console.log(`${AoTStrategy.name}: compareScoreOnState score1 ${score1}`);
+    
+    const state2Cloned = state2.clone();
+    if(!state2Cloned.getCurrentPlayer().sameOne(state1.getCurrentPlayer())) {
+      state2Cloned.switchTurn();
+    }
 
-    const score2 = this.caculateScoreOnState(state2);
-    console.log(`${AoTStrategy.name}: compareScoreOnState score2 ${score2}`);
+    const score2 = this.caculateScoreOnState(state2Cloned);
 
     return score2 - score1;
   }
@@ -299,7 +440,6 @@ class AoTStrategy {
   }
 
   applyMoveOnState(move, state) {
-    console.log(`${AoTStrategy.name}: applyMoveOnState`);
     const cloneState = state.clone();
     const simulator = new GameSimulator(cloneState);
     simulator.applyMove(move);
@@ -309,34 +449,18 @@ class AoTStrategy {
 
   getAllPosibleMove(state) {
     const posibleSkillCasts = this.getAllPosibleSkillCast(state);
-    console.log(
-      `${AoTStrategy.name}: posibleSkillCasts ${posibleSkillCasts.length}`
-    );
-
     const posibleGemSwaps = this.getAllPosibleGemSwap(state);
-    console.log(
-      `${AoTStrategy.name}: posibleGemSwaps ${posibleGemSwaps.length}`
-    );
-
     return [...posibleSkillCasts, ...posibleGemSwaps];
   }
 
   getAllPosibleSkillCast(state) {
     const currentPlayer = state.getCurrentPlayer();
     const castableHeros = currentPlayer.getCastableHeros();
-    console.log(`${AoTStrategy.name}: castableHeros ${castableHeros.length}`);
 
     const posibleCastOnHeros = castableHeros.map((hero) =>
       this.posibleCastOnHero(hero, state)
     );
-    console.log(
-      `${AoTStrategy.name}: posibleCastOnHeros ${posibleCastOnHeros.length}`
-    );
-
     const allPosibleCasts = [].concat(...posibleCastOnHeros);
-    console.log(
-      `${AoTStrategy.name}: allPosibleCasts ${allPosibleCasts.length}`
-    );
 
     return allPosibleCasts;
   }
@@ -349,12 +473,7 @@ class AoTStrategy {
 
   getAllPosibleGemSwap(state) {
     const allPosibleSwaps = state.grid.suggestMatch();
-    console.log(
-      `${AoTStrategy.name}: allPosibleSwaps ${allPosibleSwaps.length}`
-    );
-
     const allSwapMove = allPosibleSwaps.map((swap) => new AotSwapGem(swap));
-    console.log(`${AoTStrategy.name}: allSwapMove ${allSwapMove.length}`);
 
     return allSwapMove;
   }

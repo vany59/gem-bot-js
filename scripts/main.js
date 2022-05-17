@@ -44,10 +44,6 @@ visualizer.start();
 // Connect to Game server
 initConnection();
 
-const params = new Proxy(new URLSearchParams(window.location.search), {
-	get: (searchParams, prop) => searchParams.get(prop),
-});
-
 if (params.username) {
 	document.querySelector('#accountIn').value = params.username;
 }
@@ -337,10 +333,10 @@ function SendFinishTurn(isFirstTurn) {
 
 
 function StartTurn(param) {
-	currentPlayerId = param.getInt("currentPlayerId");
-	visualizer.snapShot();
-
+	
 	setTimeout(function() {
+		visualizer.snapShot();
+		currentPlayerId = param.getInt("currentPlayerId");
 		if (!isBotTurn()) {
 			trace("not isBotTurn");
 			return;
@@ -451,7 +447,7 @@ function HandleGems(paramz) {
 
 	grid.updateGems(gemCode, gemModifiers);
 
-	setTimeout(function () { SendFinishTurn(false) }, delaySwapGem);
+	// setTimeout(function () { SendFinishTurn(false) }, delaySwapGem);
 }
 
 function HandleHeroes(paramz) {

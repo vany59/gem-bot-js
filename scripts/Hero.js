@@ -1,12 +1,12 @@
 const HeroIdEnum = {
-    THUNDER_GOD : 0,
-    MONK : 1,
-    AIR_SPIRIT : 2,
-    SEA_GOD : 3,
+    THUNDER_GOD : 0, // deal aoe = attack + light gems
+    MONK : 1, // +5 damge to all 
+    AIR_SPIRIT : 2, // deal damge and remove selected gem type 
+    SEA_GOD : 3, // + attack and health to 1
     MERMAID : 4,
     SEA_SPIRIT : 5,
-    FIRE_SPIRIT : 6,
-    CERBERUS : 7,
+    FIRE_SPIRIT : 6, // deal damge base on enemy attack + red gems
+    CERBERUS : 7, // deal dame = attack + increase self attack
     DISPATER : 8,
     ELIZAH : 9,
     TALOS : 10,
@@ -81,6 +81,19 @@ class Hero {
 
     takeMana(value) {
         this.mana += value;
+    }
+
+    buffAttack(additionalAttack) {
+        this.attack += additionalAttack;
+    }
+
+    buffMana(additiionalMana) {
+        this.mana += additiionalMana;
+        this.mana = Math.max(this.mana, this.maxMana);
+    }
+
+    buffHp(additionalHp) {
+        this.hp += additionalHp;
     }
 
     clone() {
