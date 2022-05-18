@@ -71,6 +71,7 @@ class Player
         cloned.heroes = this.heroes.map(hero => hero.clone());
         cloned.heroGemType = new Set(Array.from(this.heroGemType));
         cloned.signature = this.signature;
+        cloned.metrics = this.metrics;
         return cloned;
     }
 }

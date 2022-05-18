@@ -8,6 +8,12 @@ class AotGameState {
     this.distinctions = [];
   }
 
+  calcScore() {
+    const bot = this.getCurrentPlayer();
+    const enemy = this.getCurrentEnemyPlayer();
+    bot.metrics.calc(bot, enemy);
+  }
+
   isGameOver() {
     return this.botPlayer.isLose() || this.enemyPlayer.isLose();
   }
@@ -224,6 +230,7 @@ class GameSimulator {
   }
 
   applyTurnEffect(turn) {
+    this.turnEffect = this.turnEffect;
     this.applyAttack(turn.attackGem);
     for (const [type, value] of Object.entries(turn.manaGem)) {
       this.applyMana(type, value);
@@ -305,8 +312,53 @@ class AttackDamgeScoreMetric {
     return hero.attack;
   }
 }
-class AotScoreMetric {
-  score = 0;
+
+class AotLineUpSetup {
+  static line = []
+  constructor(player, enemy) {
+    this.player = player;
+    this.enemy = enemy;
+    this.metrics = this.createScoreMetrics();
+  }
+
+  createScoreMetrics() {
+    return new AotScoreMetric(this);
+  }
+
+  static isMatched(player) {
+    return player.heroes.every(hero => this.line.includes(hero.id))
+  }
+}
+
+class AotGeneralLineup extends AotGeneralLineup {
+
+}
+
+class AotMagniTerraSigmudLineup extends AotLineUpSetup {
+  static line = [HeroIdEnum.FIRE_SPIRIT, HeroIdEnum.SEA_SPIRIT, HeroIdEnum.SEA_GOD];
+
+  createScoreMetrics() {
+    return new AotMagniTerraSigmudScoreMetric(this);
+  }
+}
+
+class AotLineUpFactory {
+  static lineups = [AotMagniTerraSigmudLineup];
+  metrics = null;
+
+  static ofPlayer(player, enemy) {
+    for(const lineup of this.lineups) {
+      if(lineup.isMatched(player)) {
+        return new lineup(player, enemy);
+      }
+    }
+
+    return new AotGeneralLineup(player, enemy);
+  }
+
+}
+
+class AotHeroMetrics {
   sumMetric = new SumScale();
   hpMetric = new LinearScale(1, 0);
   manaMetric = new LinearScale(1, 0);
@@ -314,7 +366,11 @@ class AotScoreMetric {
   overManaMetric = new LinearScale(-1, 0);
   attackMetric = new AttackDamgeScoreMetric(1, 0);
 
-  caclcHeroScore(hero, enemyPlayer) {
+  static isMatched(hero) {
+    return false;
+  }
+
+  calcScore(player, enemyPlayer) {
     const hpScore = this.hpMetric.exec(hero.hp);
     const manaScore = this.maxManaMetric.exec(hero.mana);
     const overManaScore = this.overManaMetric.exec(0);
@@ -322,34 +378,113 @@ class AotScoreMetric {
     const heroScore = this.sumMetric.exec(hpScore, manaScore, overManaScore, attackScore);
     return heroScore;
   }
+}
+
+class AotGeneralHeroMetrics extends AotHeroMetrics {
+  static fromHero(hero, player, enemy) {
+    return new this(hero, player, enemy);
+  }
+}
+class AotScoreMetric {
+  score = 0;
+  heroMetrics = [];
+  sumMetric = new SumScale();
+
+  constructor(lineup) {
+    for(const hero of lineup.player.heros) {
+      const heroMetrics = this.createHeroMetric(hero, player, enemy);
+      hero.metrics = heroMetrics;
+    }
+  }
+
+  createHeroMetric(hero, player, enemy) {
+    return new AotGeneralHeroMetrics(hero, player, enemy);
+  }
+
+  caclcHeroScore(hero, player, enemyPlayer) {
+    const score = hero.metrics.calcScore(hero, player, enemyPlayer);
+    return score;
+  }
 
   calcScoreOfPlayer(player, enemyPlayer) {
     const heros = player.getHerosAlive();
-    const heroScores = heros.map((hero) => this.caclcHeroScore(hero, enemyPlayer));
+    const heroScores = heros.map((hero) => this.caclcHeroScore(hero, player, enemyPlayer));
     const totalHeroScore = this.sumMetric.exec(...heroScores);
     return totalHeroScore;
   }
 
-  calc(state) {
-    const myScore = this.calcScoreOfPlayer(state.getCurrentPlayer(), state.getCurrentEnemyPlayer(), state);
-    const enemyScore = this.calcScoreOfPlayer(state.getCurrentEnemyPlayer(), state.getCurrentPlayer(), state);
-    const score = myScore - enemyScore;
+  calc(player, enemy, state) {
+    const myScore = this.calcScoreOfPlayer(player, enemy, state);
+    const score = myScore;
     return score;
   }
 }
 
+class AotSigmudHeroMetric extends AotHeroMetrics {
+
+}
+
+class AotTerraHeroMetric extends AotHeroMetrics {
+
+}
+
+class AotMagniHeroMetric extends AotHeroMetrics {
+
+}
+
+class AotMagniTerraSigmudScoreMetric extends AotScoreMetric {
+  constructor(lineup) {
+    super();
+  }
+
+  createHeroMetric(hero) {
+    if(hero.id == HeroIdEnum.SEA_GOD) {
+      return this.createMagniHeroMetric(hero);
+    }
+
+    if(hero.id == HeroIdEnum.FIRE_SPIRIT) {
+      return this.createSigmudHeroMetric();
+    }
+
+    if(hero.id == HeroIdEnum.SEA_SPIRIT) {
+      return this.createTerraHeroMetric();
+    }
+  }
+
+  createMagniHeroMetric(hero) {
+    const metric = new AotMagniHeroMetric();
+    return metric;
+  }
+
+  createTerraHeroMetric() {
+    const metric = new AotTerraHeroMetric();
+    return metric;
+  }
+
+  createSigmudHeroMetric() {
+    const metric = new AotSigmudHeroMetric();
+    return metric;
+  }
+}
 class AoTStrategy {
   static name = "aot";
   static factory() {
     return new AoTStrategy();
   }
 
-  scoreMetrics = new AotScoreMetric();
-
   setGame({ game, grid, botPlayer, enemyPlayer }) {
     this.game = game;
+
+    this.initPlayer(botPlayer);
+    this.initPlayer(enemyPlayer);
+    
     this.state = new AotGameState({ grid, botPlayer, enemyPlayer });
     this.snapshots = [];
+  }
+
+  initPlayer(player) {
+    player.lineup = AotLineUpFactory.ofPlayer(player, enemy);
+    player.metrics = lineup.metrics;
   }
 
   playTurn() {
@@ -435,7 +570,7 @@ class AoTStrategy {
   }
 
   caculateScoreOnState(state) {
-    const score = this.scoreMetrics.calc(state);
+    const score = state.calcScore();
     return score;
   }
 
@@ -487,7 +622,16 @@ class AoTStrategy {
   }
 }
 
+class SeeTheFutureStrategy extends AoTStrategy {
+  static name = "see";
+  static factory() {
+    const strategy = new SeeTheFutureStrategy();
+    return strategy;
+  }
+}
+
 window.strategies = {
   ...(window.strategies || {}),
   [AoTStrategy.name]: AoTStrategy,
+  [SeeTheFutureStrategy.name]: SeeTheFutureStrategy,
 };

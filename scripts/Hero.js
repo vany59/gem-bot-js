@@ -1,19 +1,19 @@
 const HeroIdEnum = {
-    THUNDER_GOD : 0, // deal aoe = attack + light gems
-    MONK : 1, // +5 damge to all 
-    AIR_SPIRIT : 2, // deal damge and remove selected gem type 
-    SEA_GOD : 3, // + attack and health to 1
-    MERMAID : 4,
-    SEA_SPIRIT : 5,
-    FIRE_SPIRIT : 6, // deal damge base on enemy attack + red gems
-    CERBERUS : 7, // deal dame = attack + increase self attack
-    DISPATER : 8,
-    ELIZAH : 9,
+    THUNDER_GOD : 0, // Zues deal aoe = attack + light gems
+    MONK : 1, // Orthur +5 damge to all 
+    AIR_SPIRIT : 2, // Nefia deal damge and remove selected gem type 
+    SEA_GOD : 3, // Magni + attack and health to 1
+    MERMAID : 4, // Poko
+    SEA_SPIRIT : 5, // Terra 
+    FIRE_SPIRIT : 6, // Sigmund  deal damge base on enemy attack + red gems
+    CERBERUS : 7, //Cerberus deal dame = attack + increase self attack
+    DISPATER : 8, //Fate
+    ELIZAH : 9, // ELIZAH
     TALOS : 10,
     MONKEY:11,
     GUTS:12,
     
-    SKELETON : 100,
+    SKELETON : 100, // Skeleton
     SPIDER:101,
     WOLF:102,
     BAT:103,
@@ -106,6 +106,7 @@ class Hero {
         cloned.maxMana = this.maxMana;
         cloned.gemTypes = this.gemTypes;
         cloned.gems = this.gems;
+        cloned.metrics = this.metrics;
         return cloned;
     }
 }
