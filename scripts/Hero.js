@@ -4,7 +4,7 @@ const HeroIdEnum = {
     AIR_SPIRIT : 2,
     SEA_GOD : 3,
     MERMAID : 4,
-    SEA_SPIRIT : 5,
+    SEA_SPIRIT : 'SEA_SPIRIT',
     FIRE_SPIRIT : 6,
     CERBERUS : 7,
     DISPATER : 8,
