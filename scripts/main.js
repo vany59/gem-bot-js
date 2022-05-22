@@ -34,8 +34,8 @@ var enemyPlayer;
 var currentPlayerId;
 var grid;
 
-const username = "";
-const token = "bot";
+const username = "4sum";
+const token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ5LmxldmFuIiwiYXV0aCI6IlJPTEVfVVNFUiIsIkxBU1RfTE9HSU5fVElNRSI6MTY1MzIwOTc3NzQ0MywiZXhwIjoxNjU1MDA5Nzc3fQ.Q3AQAmN8ZR18GwXhS77xQp7OoSdxkjf257IqGOn6NR9xPWxyNGQZ-o1QgKuKWWAgCrYbGA2H_-mUecHuiseaCA";
 var visualizer = new Visualizer({ el: '#visual' });
 var params = window.params;
 var strategy = window.strategy;
@@ -256,17 +256,22 @@ function StartGame(gameSession, room) {
 
 	let botPlayerHero = objBotPlayer.getSFSArray("heroes");
 	let enemyPlayerHero = objEnemyPlayer.getSFSArray("heroes");
+	console.log('botPlayerHero', botPlayerHero)
+	console.log('enemyPlayerHero', enemyPlayerHero)
 
 	for (let i = 0; i < botPlayerHero.size(); i++) {
 		botPlayer.heroes.push(new Hero(botPlayerHero.getSFSObject(i)));
 	}
+	console.log('botPlayer',botPlayer)
 
 	for (let i = 0; i < enemyPlayerHero.size(); i++) {
 		enemyPlayer.heroes.push(new Hero(enemyPlayerHero.getSFSObject(i)));
 	}
+	console.log('enemyPlayer',enemyPlayer)
 
 	// Gems
 	grid = new Grid(gameSession.getSFSArray("gems"), null, botPlayer.getRecommendGemType());
+	console.log('grid', grid)
 	currentPlayerId = gameSession.getInt("currentPlayerId");
 	trace("StartGame ");
 
@@ -378,6 +383,18 @@ function StartTurn(param) {
 		}
 		let heroFullMana = botPlayer.anyHeroFullMana();
 		if (heroFullMana != null) {
+			switch(heroFullMana.id.toString()) {
+				case HeroIdEnum.SEA_SPIRIT:{
+					return SendCastSkill(heroFullMana, {
+						targetId: heroFullMana.useSeaSpiritSkill(botPlayer.getHerosAlive()).id.toString()
+					})
+				}
+				case HeroIdEnum.DISPATER: {
+					return SendCastSkill(heroFullMana, {
+						targetId: heroFullMana.useDispaterSkill(enemyPlayer).id.toString()
+					})
+				}
+			}
 			SendCastSkill(heroFullMana)
 		} else {
 			SendSwapGem()

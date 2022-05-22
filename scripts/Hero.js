@@ -1,25 +1,25 @@
 const HeroIdEnum = {
-    THUNDER_GOD : 0, // Zues deal aoe = attack + light gems
-    MONK : 1, // Orthur +5 damge to all 
-    AIR_SPIRIT : 2, // Nefia deal damge and remove selected gem type 
-    SEA_GOD : 3, // Magni + attack and health to 1
-    MERMAID : 4, // Poko
+    THUNDER_GOD : 'THUNDER_GOD', // Zues deal aoe = attack + light gems
+    MONK : 'MONK', // Orthur +5 damge to all 
+    AIR_SPIRIT : 'AIR_SPIRIT', // Nefia deal damge and remove selected gem type 
+    SEA_GOD : 'SEA_GOD', // Magni + attack and health to 1
+    MERMAID : 'MERMAID', // Poko
     SEA_SPIRIT : 'SEA_SPIRIT', // Terra 
-    FIRE_SPIRIT : 6, // Sigmund  deal damge base on enemy attack + red gems
-    CERBERUS : 7, //Cerberus deal dame = attack + increase self attack
-    DISPATER : 8, //Fate
-    ELIZAH : 9, // ELIZAH
-    TALOS : 10,
-    MONKEY:11,
-    GUTS:12,
+    FIRE_SPIRIT : 'FIRE_SPIRIT', // Sigmund  deal damge base on enemy attack + red gems
+    CERBERUS : 'CERBERUS', //Cerberus deal dame = attack + increase self attack
+    DISPATER : 'DISPATER', //Fate
+    ELIZAH : 'ELIZAH', // ELIZAH
+    TALOS : 'TALOS',
+    MONKEY: 'MONKEY',
+    GUTS: 'GUTS',
     
-    SKELETON : 100, // Skeleton
-    SPIDER:101,
-    WOLF:102,
-    BAT:103,
-    BERSERKER:104,
-    SNAKE:105,
-    GIANT_SNAKE:106
+    SKELETON : 'SKELETON', // Skeleton
+    SPIDER: 'SPIDER',
+    WOLF: 'WOLF',
+    BAT: 'BAT',
+    BERSERKER: 'BERSERKER',
+    SNAKE: 'SNAKE',
+    GIANT_SNAKE: 'GIANT_SNAKE',
 };
   
 
@@ -42,6 +42,9 @@ class Hero {
             this.gemTypes.push(gemName);
             this.gems.push(GemType[gemName]);
         }
+
+        //hero
+        this.dispaterUseSkillCount = 0
     }
 
     updateHero(objHero) {
@@ -108,5 +111,28 @@ class Hero {
         cloned.gems = this.gems;
         cloned.metrics = this.metrics;
         return cloned;
+    }
+
+    useSeaSpiritSkill(heros) {
+        // buff for cerberus
+        const cerberus = heros.find(hero => hero.id === HeroIdEnum.CERBERUS)
+        if(cerberus) return cerberus
+    
+        // buff for seaSpirit
+        const seaSpirit = heros.find(hero => hero.id === HeroIdEnum.SEA_SPIRIT)
+        if(seaSpirit) return seaSpirit
+    
+        // buff for dispater
+        const dispater = heros.find(hero => hero.id === HeroIdEnum.DISPATER)
+        if(dispater) return dispater
+    }
+
+    useDispaterSkill(enermy) {
+        this.dispaterUseSkillCount++
+        if(this.dispaterUseSkillCount < 2) {
+            return enermy.getHeroMostHealth()
+        } else {
+            return enermy.getHeroMostDamage()
+        }
     }
 }
