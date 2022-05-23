@@ -330,10 +330,6 @@ class AotLineUpSetup {
   }
 }
 
-class AotGeneralLineup extends AotGeneralLineup {
-
-}
-
 class AotMagniTerraSigmudLineup extends AotLineUpSetup {
   static line = [HeroIdEnum.FIRE_SPIRIT, HeroIdEnum.SEA_SPIRIT, HeroIdEnum.SEA_GOD];
 
