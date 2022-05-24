@@ -50,23 +50,14 @@ class Grid {
         if(seaSpiritIdx > -1) {
             aliveHeros[seaSpiritIdx].gems.forEach(gem => heroGemType.add(gem))
         }
-        
-
-        // for (let i = 0; i < aliveHeros.length; i++){
-        //     let hero = aliveHeros[i];
-
-        //     for (let j = 0; j < hero.gemTypes.length; j++){
-        //         let gt = hero.gemTypes[j];
-        //         heroGemType.add(GemType[gt]);
-        //     }
-        // }
+    
         return heroGemType
     }
 
     checkPossibleKillEnemy(listMatchGem) {
         const haveSword = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD)
-        const botDmg = botPlayer.heroes[0].attack
-        const enemyHp = enemyPlayer.heroes[0].hp 
+        const botDmg = botPlayer.getHerosAlive()[0].attack
+        const enemyHp = enemyPlayer.getHerosAlive()[0].hp
         if( haveSword && (botDmg > enemyHp)) return haveSword.getIndexSwapGem()
         return []
     }
@@ -76,7 +67,7 @@ class Grid {
 
         console.log("Zâza recommendSwapGem: ", listMatchGem);
 
-debugger
+        // debugger
 
         if (listMatchGem.length === 0) {
             return [-1, -1];
@@ -87,8 +78,6 @@ debugger
             // console.log(matchGemSizeThanFour.getSizeMatch())
             return matchGemSizeThanFour.getIndexSwapGem();
         }
-
-        
 
         let useSwordKillEnemy = this.checkPossibleKillEnemy(listMatchGem)
         if(!!useSwordKillEnemy.length){
@@ -106,7 +95,6 @@ debugger
             return curr
         },{})
         if(!!multiGemsFlag.length){
-
             console.log('an double ne')
             return multiGemsFlag
         } 
@@ -124,12 +112,11 @@ debugger
             return matchGemType.getIndexSwapGem();
         }
 
- 
-
         let matchGemSword = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD);
         if (matchGemSword) {
             return matchGemSword.getIndexSwapGem();
         }
+
         let matchGemSizeThanThree = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 3);
         const isIncludeGemsCollection = botPlayer.heroes.some(hero => hero.gems.includes(matchGemSizeThanThree?.type))
         if (matchGemSizeThanThree && isIncludeGemsCollection) {

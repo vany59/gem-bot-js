@@ -386,7 +386,7 @@ function StartTurn(param) {
 			return;
 		}
 		let heroFullMana = botPlayer.anyHeroFullMana();
-		let isExtraTurn = grid.isExtraTurnBeforeCastSkill();
+		let isExtraTurn = grid?.isExtraTurnBeforeCastSkill();
 		if (heroFullMana != null) {
 			switch(heroFullMana.id.toString()) {
 				case HeroIdEnum.SEA_SPIRIT:{

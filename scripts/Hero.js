@@ -129,8 +129,40 @@ class Hero {
 
     useDispaterSkill(enermy) {
         this.dispaterUseSkillCount++
-        const canKillEnermy = enermy.heroes.getHerosAlive().find(hero => hero.hp <= this.attack)
-        if(canKillEnermy) return canKillEnermy
+        
+        const redGems = [...grid.gems].filter(gem => gem.type === GemType.RED).length
+        const newHeroesEnermy = [...enermy.getHerosAlive()].map((value) => ({...value, damageTaken: value.hp - (value.attack + redGems) }))
+const canKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken <= 0)
+const cantKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken > 0)
+if(!!canKillHeros.length){
+            let listTarget = canKillHeros.filter(hero => hero.mana === hero.maxMana)
+            let target = listTarget.reduce((prev, curr) => {
+                return prev.attack > curr.attack ? prev : curr
+            } ,{})
+            if (Object.values(target).length) return target
+
+            target = canKillHeros.reduce((prev, curr) => {
+                return prev.damageTaken > curr.damageTaken ? prev : curr
+            },{})
+            if (Object.values(target).length) return target
+
+            return canKillHeros[0]
+        }
+        
+if(!!cantKillHeros){
+    let listTarget = cantKillHeros.filter(hero => hero.mana === hero.maxMana)
+    let target = listTarget.reduce((prev, curr) => {
+        return prev.attack > curr.attack ? prev : curr
+    } ,{})
+    if (Object.values(target).length) return target
+
+    target = cantKillHeros.reduce((prev, curr) => {
+        return prev.damageTaken < curr.damageTaken ? prev : curr
+    },{})
+    if (target) return target
+
+    return cantKillHeros[0]
+}
 
         if(this.dispaterUseSkillCount < 2) {
             return enermy.getHeroMostHealth()
