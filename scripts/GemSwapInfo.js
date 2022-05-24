@@ -10,4 +10,8 @@ class GemSwapInfo {
     getIndexSwapGem() {
         return [this.index1, this.index2];
     }
+
+    getTypeOfGem() {
+        return this.type
+    }
 }

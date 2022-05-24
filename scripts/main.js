@@ -270,7 +270,7 @@ function StartGame(gameSession, room) {
 	console.log('enemyPlayer',enemyPlayer)
 
 	// Gems
-	grid = new Grid(gameSession.getSFSArray("gems"), null, botPlayer.getRecommendGemType());
+	grid = new Grid(gameSession.getSFSArray("gems"), null, botPlayer.getRecommendGemType(), enemyPlayer.heroes);
 	console.log('grid', grid)
 	currentPlayerId = gameSession.getInt("currentPlayerId");
 	trace("StartGame ");
@@ -386,6 +386,7 @@ function StartTurn(param) {
 			return;
 		}
 		let heroFullMana = botPlayer.anyHeroFullMana();
+		let isExtraTurn = grid.isExtraTurnBeforeCastSkill();
 		if (heroFullMana != null) {
 			switch(heroFullMana.id.toString()) {
 				case HeroIdEnum.SEA_SPIRIT:{
@@ -393,7 +394,8 @@ function StartTurn(param) {
 						targetId: heroFullMana.useSeaSpiritSkill(botPlayer.getHerosAlive()).id.toString()
 					})
 				}
-				case HeroIdEnum.DISPATER: {
+				case HeroIdEnum.FIRE_SPIRIT: {
+					if(isExtraTurn) SendSwapGem()
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useDispaterSkill(enemyPlayer).id.toString()
 					})
