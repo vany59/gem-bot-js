@@ -129,6 +129,9 @@ class Hero {
 
     useDispaterSkill(enermy) {
         this.dispaterUseSkillCount++
+        const canKillEnermy = enermy.heroes.getHerosAlive().find(hero => hero.hp <= this.attack)
+        if(canKillEnermy) return canKillEnermy
+
         if(this.dispaterUseSkillCount < 2) {
             return enermy.getHeroMostHealth()
         } else {

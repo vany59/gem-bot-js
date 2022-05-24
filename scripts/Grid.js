@@ -33,6 +33,37 @@ class Grid {
         }
     }
 
+    getPriorityGem() {
+        const heroGemType = new Set();
+        let aliveHeros = botPlayer.heroes.filter(hero => hero.isAlive())
+
+        const dispaterIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.DISPATER)
+        if(dispaterIdx > -1) {
+            aliveHeros[dispaterIdx].gems.forEach(gem => heroGemType.add(gem))
+        }
+
+        const cerberusIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.CERBERUS)
+        if(cerberusIdx > -1) {
+            aliveHeros[cerberusIdx].gems.forEach(gem => heroGemType.add(gem))
+        }
+
+        const seaSpiritIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.SEA_SPIRIT)
+        if(seaSpiritIdx > -1) {
+            aliveHeros[seaSpiritIdx].gems.forEach(gem => heroGemType.add(gem))
+        }
+        
+
+        // for (let i = 0; i < aliveHeros.length; i++){
+        //     let hero = aliveHeros[i];
+
+        //     for (let j = 0; j < hero.gemTypes.length; j++){
+        //         let gt = hero.gemTypes[j];
+        //         heroGemType.add(GemType[gt]);
+        //     }
+        // }
+        return heroGemType
+    }
+
     recommendSwapGem() {
         let listMatchGem = this.suggestMatch();
 
@@ -43,9 +74,21 @@ class Grid {
         }
 
         let matchGemSizeThanFour = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 4);
-
         if (matchGemSizeThanFour) {
             return matchGemSizeThanFour.getIndexSwapGem();
+        }
+
+        const recommendGem = this.getPriorityGem()
+
+        let gemType = Array.from(recommendGem).find(gemValue => listMatchGem.find(e => e.type === gemValue))
+        let matchGemType = listMatchGem.filter(match => match.type === gemType).reduce(function(prev, current) {
+            return (prev.sizeMatch > current.sizeMatch) ? prev : current
+        })
+        
+        console.log("matchGem: ", matchGemType);
+        if (matchGemType) {
+            console.log("matchGemType ");
+            return matchGemType.getIndexSwapGem();
         }
 
         let matchGemSizeThanThree = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 3);
@@ -60,17 +103,19 @@ class Grid {
             return matchGemSword.getIndexSwapGem();
         }
 
-        console.log("myHeroGemType: ", this.myHeroGemType, "| Array.from(this.myHeroGemType)", Array.from(this.myHeroGemType));
+        // console.log("myHeroGemType: ", this.myHeroGemType, "| Array.from(this.myHeroGemType)", Array.from(this.myHeroGemType));
+        // const recommendGem = this.getPriorityGem()
 
-        let matchGemType = listMatchGem.find(gemMatch => Array.from(this.myHeroGemType).includes(gemMatch.type));
+        // let matchGemType = recommendGem.find(gemValue => listMatchGem.find(e => e.type === gemValue)) //listMatchGem.find(gemMatch => Array.from(recommendGem).includes(gemMatch.type));
+        // debugger
 
-        console.log("matchGem: ", matchGemType);
+        // console.log("matchGem: ", matchGemType);
 
 
-        if (matchGemType) {
-            console.log("matchGemType ");
-            return matchGemType.getIndexSwapGem();
-        }
+        // if (matchGemType) {
+        //     console.log("matchGemType ");
+        //     return matchGemType.getIndexSwapGem();
+        // }
 
         console.log("listMatchGem[0].getIndexSwapGem() ", listMatchGem[0].getIndexSwapGem());
 
@@ -130,10 +175,10 @@ class Grid {
         let matchGems = this.matchesAt(parseInt(currentGem.x), parseInt(currentGem.y));
 
         this.swap(currentGem, swapGem);
-
+        
 
         if (matchGems.size > 0) {
-            listMatchGem.push(new GemSwapInfo(currentGem.index, swapGem.index, matchGems.length, currentGem.type));
+            listMatchGem.push(new GemSwapInfo(currentGem.index, swapGem.index, matchGems.size, currentGem.type));
         }
     }
 
