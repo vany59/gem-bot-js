@@ -55,9 +55,9 @@ function initConnection() {
 
 	// Create configuration object
 	var config = {};
-	config.host = "172.16.100.112";
+	// config.host = "172.16.100.112";
 	config.port = 8080;
-	// config.host = "10.10.10.18";
+	config.host = "10.10.10.18";
 	// config.port = 8888;
 	//config.debug = true;
 	config.useSSL = false;
@@ -399,6 +399,10 @@ function StartTurn(param) {
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useDispaterSkill(enemyPlayer).id.toString()
 					})
+				}
+				case HeroIdEnum.CERBERUS: {
+					if(isExtraTurn) return SendSwapGem()
+					return SendCastSkill(heroFullMana)
 				}
 			}
 			SendCastSkill(heroFullMana)

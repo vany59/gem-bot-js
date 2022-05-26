@@ -122,9 +122,11 @@ class Hero {
         const seaSpirit = heros.find(hero => hero.id === HeroIdEnum.SEA_SPIRIT)
         if(seaSpirit) return seaSpirit
     
-        // buff for dispater
-        const dispater = heros.find(hero => hero.id === HeroIdEnum.DISPATER)
-        if(dispater) return dispater
+        // buff for fireSpirit
+        const fireSpirit = heros.find(hero => hero.id === HeroIdEnum.FIRE_SPIRIT)
+        if(fireSpirit) return fireSpirit
+
+        return heros[0]
     }
 
     useDispaterSkill(enermy) {

@@ -36,14 +36,16 @@ class Grid {
         const heroGemType = new Set();
         let aliveHeros = botPlayer.heroes.filter(hero => hero.isAlive())
 
-        const fireSpiritIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.FIRE_SPIRIT)
-        if(fireSpiritIdx > -1) {
-            aliveHeros[fireSpiritIdx].gems.forEach(gem => heroGemType.add(gem))
-        }
-
         const cerberusIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.CERBERUS)
         if(cerberusIdx > -1) {
             aliveHeros[cerberusIdx].gems.forEach(gem => heroGemType.add(gem))
+        }
+
+        const fireSpiritIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.FIRE_SPIRIT)
+        if(fireSpiritIdx > -1) {
+            // debugger
+            const gems = aliveHeros[fireSpiritIdx].gems.sort((a,b) => b - a)
+            gems.forEach(gem => heroGemType.add(gem))
         }
 
         const seaSpiritIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.SEA_SPIRIT)
@@ -99,21 +101,27 @@ class Grid {
             return multiGemsFlag
         } 
 
+        // 4 swords
+        let matchGemSword4 = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD && gemMatch.sizeMatch > 3);
+        if (matchGemSword4 && matchGemSword4.getIndexSwapGem) {
+            return matchGemSword4.getIndexSwapGem();
+        }
+
         const recommendGem = this.getPriorityGem()
 
         let gemType = Array.from(recommendGem).find(gemValue => listMatchGem.find(e => e.type === gemValue))
         let matchGemType = listMatchGem.filter(match => match.type === gemType).reduce(function(prev, current) {
             return (prev.sizeMatch > current.sizeMatch) ? prev : current
-        })
+        },{})
         
         console.log("matchGem: ", matchGemType);
-        if (matchGemType) {
+        if (matchGemType && matchGemType.getIndexSwapGem) {
             console.log("matchGemType ");
             return matchGemType.getIndexSwapGem();
         }
 
         let matchGemSword = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD);
-        if (matchGemSword) {
+        if (matchGemSword && matchGemSword.getIndexSwapGem) {
             return matchGemSword.getIndexSwapGem();
         }
 
