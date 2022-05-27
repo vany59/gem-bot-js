@@ -36,7 +36,6 @@ class Grid {
         const heroGemType = new Set();
         let aliveHeros = botPlayer.heroes.filter(hero => hero.isAlive())
 
-        debugger
         const cerberusIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.CERBERUS)
         if(cerberusIdx > -1) {
             aliveHeros[cerberusIdx].gems.forEach(gem => heroGemType.add(gem))
@@ -110,7 +109,6 @@ class Grid {
         }
 
         const listExcludeModifiers = [GemModifier.HIT_POINT, GemModifier.BUFF_ATTACK, GemModifier.POINT]
-        debugger
         let matchGemModifers = listMatchGem.find(gemMatch => !!gemMatch.getSetGems().length && !gemMatch.getSetGems().some(e => listExcludeModifiers.includes(e)))
         if (matchGemModifers){
             return matchGemModifers.getIndexSwapGem();
