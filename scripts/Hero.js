@@ -134,9 +134,9 @@ class Hero {
         
         const redGems = [...grid.gems].filter(gem => gem.type === GemType.RED).length
         const newHeroesEnermy = [...enermy.getHerosAlive()].map((value) => ({...value, damageTaken: value.hp - (value.attack + redGems) }))
-const canKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken <= 0)
-const cantKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken > 0)
-if(!!canKillHeros.length){
+        const canKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken <= 0)
+        const cantKillHeros = newHeroesEnermy.filter(hero => hero.damageTaken > 0)
+        if(!!canKillHeros.length){
             let listTarget = canKillHeros.filter(hero => hero.mana === hero.maxMana)
             let target = listTarget.reduce((prev, curr) => {
                 return prev.attack > curr.attack ? prev : curr

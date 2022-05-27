@@ -60,6 +60,16 @@ class Player
         hero = this.checkHeroBuffSkill(heros)
         if(hero) return hero
 
+        let cerberus = heros.find(e => e.id.toString() === HeroIdEnum.CERBERUS)
+        let fire = heros.find(e => e.id.toString() === HeroIdEnum.FIRE_SPIRIT)
+        if(cerberus && fire) {
+            let cerberusDmg = cerberus.attack
+            let redGems = [...grid.gems].filter(gem => gem.type === GemType.RED).length
+            let maxEnemyDmg = Math.max(...enemyPlayer.getHerosAlive().map(enemy => enemy.attack)) 
+            let fireDmg = redGems + maxEnemyDmg
+            return cerberusDmg > fireDmg ? cerberus : fire
+        }
+
         // ceberus
         hero = heros.find(e => e.id.toString() === HeroIdEnum.CERBERUS)
         if(hero) return hero

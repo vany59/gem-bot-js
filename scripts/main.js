@@ -390,21 +390,22 @@ function StartTurn(param) {
 		if (heroFullMana != null) {
 			switch(heroFullMana.id.toString()) {
 				case HeroIdEnum.SEA_SPIRIT:{
-					const isFireSpiritCastSkill = enemyPlayer.getCastableHeros().find(hero => hero.id.toString() === HeroIdEnum.FIRE_SPIRIT )
-					if(isFireSpiritCastSkill) return SendSwapGem()
+					const isEnemyFireSpiritCastSkill = enemyPlayer.getCastableHeros().find(hero => hero.id.toString() === HeroIdEnum.FIRE_SPIRIT)
+					const isBotCerberusCastSkill = botPlayer.getCastableHeros().find(hero => hero.id.toString() === HeroIdEnum.CERBERUS)
+					if(isEnemyFireSpiritCastSkill && !isBotCerberusCastSkill) return SendSwapGem()
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useSeaSpiritSkill(botPlayer.getHerosAlive()).id.toString()
 					})
+				}
+				case HeroIdEnum.CERBERUS: {
+					if(isExtraTurn) return SendSwapGem()
+					return SendCastSkill(heroFullMana)
 				}
 				case HeroIdEnum.FIRE_SPIRIT: {
 					if(isExtraTurn) return SendSwapGem()
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useDispaterSkill(enemyPlayer).id.toString()
 					})
-				}
-				case HeroIdEnum.CERBERUS: {
-					if(isExtraTurn) return SendSwapGem()
-					return SendCastSkill(heroFullMana)
 				}
 			}
 			SendCastSkill(heroFullMana)
