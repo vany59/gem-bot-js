@@ -56,15 +56,16 @@ class Player
         if(!heros.length) return null
 
         let hero = null
-        // dispater
-        hero = heros.find(e => e.id.toString() === HeroIdEnum.DISPATER)
-        if(hero) return hero
 
         hero = this.checkHeroBuffSkill(heros)
         if(hero) return hero
 
         // ceberus
         hero = heros.find(e => e.id.toString() === HeroIdEnum.CERBERUS)
+        if(hero) return hero
+
+        // dispater
+        hero = heros.find(e => e.id.toString() === HeroIdEnum.FIRE_SPIRIT)
         if(hero) return hero
 
         // seaSpirit

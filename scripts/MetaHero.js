@@ -29,8 +29,8 @@ class MetaHero extends Hero {
     const seaSpirit = arr.find(hero => hero.id === HeroIdEnum.SEA_SPIRIT)
     if(seaSpirit) return seaSpirit
 
-    // buff for dispater
-    const dispater = arr.find(hero => hero.id === HeroIdEnum.DISPATER)
-    if(dispater) return dispater
+    // buff for fireSpirit
+    const fireSpirit = arr.find(hero => hero.id === HeroIdEnum.FIRE_SPIRIT)
+    if(fireSpirit) return fireSpirit
   }
 }

@@ -36,6 +36,7 @@ class Grid {
         const heroGemType = new Set();
         let aliveHeros = botPlayer.heroes.filter(hero => hero.isAlive())
 
+        debugger
         const cerberusIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.CERBERUS)
         if(cerberusIdx > -1) {
             aliveHeros[cerberusIdx].gems.forEach(gem => heroGemType.add(gem))
@@ -43,7 +44,6 @@ class Grid {
 
         const fireSpiritIdx = aliveHeros.findIndex(hero => hero.id === HeroIdEnum.FIRE_SPIRIT)
         if(fireSpiritIdx > -1) {
-            // debugger
             const gems = aliveHeros[fireSpiritIdx].gems.sort((a,b) => b - a)
             gems.forEach(gem => heroGemType.add(gem))
         }
@@ -59,8 +59,11 @@ class Grid {
     checkPossibleKillEnemy(listMatchGem) {
         const haveSword = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD)
         const botDmg = botPlayer.getHerosAlive()[0].attack
+        const botHp = botPlayer.getHerosAlive()[0].hp
+        const enemyDmg = enemyPlayer.getHerosAlive()[0].attack
         const enemyHp = enemyPlayer.getHerosAlive()[0].hp
-        if( haveSword && (botDmg > enemyHp)) return haveSword.getIndexSwapGem()
+        console.log('gach ong 2: ',botDmg > enemyHp , enemyDmg > botHp)
+        if( haveSword && (botDmg > enemyHp || enemyDmg > botHp)) return haveSword.getIndexSwapGem()
         return []
     }
 
@@ -75,10 +78,15 @@ class Grid {
             return [-1, -1];
         }
 
-        let matchGemSizeThanFour = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 4);
+        let matchGemSizeThanFour = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 4 || !!gemMatch.getSetGems().includes(GemModifier.EXTRA_TURN));
         if (matchGemSizeThanFour) {
-            // console.log(matchGemSizeThanFour.getSizeMatch())
             return matchGemSizeThanFour.getIndexSwapGem();
+        }
+
+        // 4 swords
+        let matchGemSword4 = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD && gemMatch.sizeMatch > 3);
+        if (matchGemSword4 && matchGemSword4.getIndexSwapGem) {
+            return matchGemSword4.getIndexSwapGem();
         }
 
         let useSwordKillEnemy = this.checkPossibleKillEnemy(listMatchGem)
@@ -99,12 +107,13 @@ class Grid {
         if(!!multiGemsFlag.length){
             console.log('an double ne')
             return multiGemsFlag
-        } 
+        }
 
-        // 4 swords
-        let matchGemSword4 = listMatchGem.find(gemMatch => gemMatch.type == GemType.SWORD && gemMatch.sizeMatch > 3);
-        if (matchGemSword4 && matchGemSword4.getIndexSwapGem) {
-            return matchGemSword4.getIndexSwapGem();
+        const listExcludeModifiers = [GemModifier.HIT_POINT, GemModifier.BUFF_ATTACK, GemModifier.POINT]
+        debugger
+        let matchGemModifers = listMatchGem.find(gemMatch => !!gemMatch.getSetGems().length && !gemMatch.getSetGems().some(e => listExcludeModifiers.includes(e)))
+        if (matchGemModifers){
+            return matchGemModifers.getIndexSwapGem();
         }
 
         const recommendGem = this.getPriorityGem()
@@ -208,13 +217,13 @@ class Grid {
         
 
         if (matchGems.size > 0) {
-            listMatchGem.push(new GemSwapInfo(currentGem.index, swapGem.index, matchGems.size, currentGem.type));
+            listMatchGem.push(new GemSwapInfo(currentGem.index, swapGem.index, matchGems.size, currentGem.type, matchGems));
         }
     }
 
     isExtraTurnBeforeCastSkill(){
         let listMatchGem = this.suggestMatch();
-        let matchGemSizeThanFour = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 4);
+        let matchGemSizeThanFour = listMatchGem.find(gemMatch => gemMatch.sizeMatch > 4 || !!gemMatch.getSetGems().includes(GemModifier.EXTRA_TURN));
         if (matchGemSizeThanFour) {
             return true
         }
@@ -344,7 +353,7 @@ class Grid {
                 matches.push(matchGems);
             }
         }
-        return matches.length > 0 ? [union(matches)] : [];
+        return matches.length > 0 ? matches : [];
     }
     
     performDistinction(allMatchGems, distinction) {

@@ -55,9 +55,9 @@ function initConnection() {
 
 	// Create configuration object
 	var config = {};
-	// config.host = "172.16.100.112";
+	config.host = "172.16.100.112";
 	config.port = 8080;
-	config.host = "10.10.10.18";
+	// config.host = "10.10.10.18";
 	// config.port = 8888;
 	//config.debug = true;
 	config.useSSL = false;
@@ -390,12 +390,14 @@ function StartTurn(param) {
 		if (heroFullMana != null) {
 			switch(heroFullMana.id.toString()) {
 				case HeroIdEnum.SEA_SPIRIT:{
+					const isFireSpiritCastSkill = enemyPlayer.getCastableHeros().find(hero => hero.id.toString() === HeroIdEnum.FIRE_SPIRIT )
+					if(isFireSpiritCastSkill) return SendSwapGem()
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useSeaSpiritSkill(botPlayer.getHerosAlive()).id.toString()
 					})
 				}
 				case HeroIdEnum.FIRE_SPIRIT: {
-					if(isExtraTurn) SendSwapGem()
+					if(isExtraTurn) return SendSwapGem()
 					return SendCastSkill(heroFullMana, {
 						targetId: heroFullMana.useDispaterSkill(enemyPlayer).id.toString()
 					})
